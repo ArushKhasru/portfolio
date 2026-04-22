@@ -1,0 +1,33 @@
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+:root {
+  --page-bg: #1d1f21;
+  --page-fg: #e2e2e5;
+  color-scheme: dark;
+}
+
+:root[data-theme='light'] {
+  --page-bg: #f3f6fb;
+  --page-fg: #0f172a;
+  color-scheme: light;
+}
+
+html,
+body,
+#root {
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+  background-color: var(--page-bg);
+  color: var(--page-fg);
+  font-family: 'Space Grotesk', sans-serif;
+  transition:
+    background-color 220ms ease,
+    color 220ms ease;
+}
