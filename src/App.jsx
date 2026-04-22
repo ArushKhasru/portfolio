@@ -1,4 +1,4 @@
-﻿import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import './App.css'
 
 const personalDetails = {
@@ -154,26 +154,24 @@ function getInitialTheme() {
 }
 
 function StartupLoader({ isDark, onComplete }) {
-  const loaderName = 'Arush_Khasru'
+  const loaderName = 'ARUSH_KHASRU'
   const [typedName, setTypedName] = useState('')
   const [lineProgress, setLineProgress] = useState(0)
   const hasCompletedRef = useRef(false)
-  const TYPE_DELAY_MS = 170
-  const LINE_PROGRESS_DELAY_MS = 120
-  const FINAL_HOLD_MS = 420
+  const TYPE_DELAY_MS = 100
+  const LINE_PROGRESS_DELAY_MS = 80
+  const FINAL_HOLD_MS = 600
 
   useEffect(() => {
     let timer = undefined
 
     if (typedName.length < loaderName.length) {
-      const typingTimer = window.setTimeout(() => {
+      timer = window.setTimeout(() => {
         setTypedName(loaderName.slice(0, typedName.length + 1))
       }, TYPE_DELAY_MS)
-
-      timer = typingTimer
     } else if (lineProgress < 100) {
       timer = window.setTimeout(() => {
-        setLineProgress((current) => Math.min(current + 5, 100))
+        setLineProgress((current) => Math.min(current + 8, 100))
       }, LINE_PROGRESS_DELAY_MS)
     } else if (!hasCompletedRef.current) {
       hasCompletedRef.current = true
@@ -183,15 +181,7 @@ function StartupLoader({ isDark, onComplete }) {
     }
 
     return () => window.clearTimeout(timer)
-  }, [
-    typedName,
-    loaderName,
-    lineProgress,
-    onComplete,
-    TYPE_DELAY_MS,
-    LINE_PROGRESS_DELAY_MS,
-    FINAL_HOLD_MS,
-  ])
+  }, [typedName, lineProgress, onComplete, loaderName.length])
 
   return (
     <section
@@ -207,7 +197,7 @@ function StartupLoader({ isDark, onComplete }) {
             </span>
           )}
         </p>
-        <div className="startup-loader__line-loader" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={lineProgress}>
+        <div className="startup-loader__line-loader mt-8" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={lineProgress}>
           <span className="startup-loader__line-loader-fill" style={{ width: `${lineProgress}%` }}></span>
         </div>
       </div>
@@ -215,23 +205,23 @@ function StartupLoader({ isDark, onComplete }) {
   )
 }
 
-function AKLogo({ onOpenAbout }) {
+function AKLogo({ onOpenAbout, isDark }) {
   return (
     <button
       type="button"
       onClick={onOpenAbout}
-      className="logo-node relative flex h-[84px] w-[58px] items-center justify-center overflow-hidden rounded-xl"
+      className={`logo-node relative flex h-[84px] w-[58px] items-center justify-center overflow-hidden rounded-xl ${isDark ? 'cyber-glitch' : ''}`}
       aria-label="Go to About section"
       title="About"
     >
       <span aria-hidden="true" className="logo-node__pulse absolute inset-0"></span>
         <svg aria-hidden="true" focusable="false" viewBox="0 0 272 480" xmlns="http://www.w3.org/2000/svg">
     <title>AK Monogram</title>
-    <path fill="#cdffb8" d="M62 417V123L90 107V401ZM128 382V123L156 107V366ZM88 295V253L116 237V279ZM192 417V123L220 107V401ZM220 221 250 132 272 120 242
+    <path fill={isDark ? "#00ff41" : "#cdffb8"} d="M62 417V123L90 107V401ZM128 382V123L156 107V366ZM88 295V253L116 237V279ZM192 417V123L220 107V401ZM220 221 250 132 272 120 242
   209ZM220 278 250 366 272 354 242 265Z"/>
-    <path fill="#d482ab" d="M22 146 62 123 90 107 50 130ZM88 146 128 123 156 107 116 130ZM62 268 88 253 116 237 90 252ZM152 146 192 123 220 107 180 130ZM222
+    <path fill={isDark ? "#00cc33" : "#d482ab"} d="M22 146 62 123 90 107 50 130ZM88 146 128 123 156 107 116 130ZM62 268 88 253 116 237 90 252ZM152 146 192 123 220 107 180 130ZM222
   149 250 132 272 120 244 136ZM192 262 220 278 244 264 216 248Z"/>
-    <path fill="#2abc89" d="M22 440 62 417V123L22 146ZM88 405 128 382V123L88 146ZM62 310 88 295V253L62 268ZM152 440 192 417V123L152 146ZM192 237 220 221 250
+    <path fill={isDark ? "#009926" : "#2abc89"} d="M22 440 62 417V123L22 146ZM88 405 128 382V123L88 146ZM62 310 88 295V253L62 268ZM152 440 192 417V123L152 146ZM192 237 220 221 250
   132 222 149ZM192 262 220 278 250 366 222 350Z"/>
   </svg>
     </button>
@@ -458,9 +448,9 @@ Down Arrow                   - next command`,
       <div className="terminal-shell flex h-[420px] flex-col overflow-hidden border border-white/15 bg-surface-container-lowest">
         <div className="flex items-center justify-between border-b border-white/10 bg-white/5 px-4 py-2">
           <div className="flex gap-1.5">
-            <div className="h-2.5 w-2.5 rounded-full bg-error/40"></div>
-            <div className="h-2.5 w-2.5 rounded-full bg-secondary-fixed-dim/40"></div>
-            <div className="h-2.5 w-2.5 rounded-full bg-primary/40"></div>
+            <div className="h-3 w-3 rounded-full bg-[#ff5f56]"></div>
+            <div className="h-3 w-3 rounded-full bg-[#ffbd2e]"></div>
+            <div className="h-3 w-3 rounded-full bg-[#27c93f]"></div>
           </div>
           <div className="font-code-md text-xs text-on-surface-variant/50">
             portfolio.zsh - interactive
@@ -508,15 +498,20 @@ Down Arrow                   - next command`,
           </div>
           <form onSubmit={handleSubmit} className="mt-4 flex items-center gap-3">
             <span className="terminal-prompt">{promptPrefix}$</span>
-            <input
+            <div className="relative flex-1">
+              <input
               ref={inputRef}
               value={input}
               onChange={(event) => setInput(event.target.value)}
               onKeyDown={handleKeyDown}
-              className="terminal-input w-full  bg-transparent text-on-surface  placeholder:text-on-surface-variant/60"
+              className="terminal-input w-full bg-transparent text-on-surface placeholder:text-on-surface-variant/60 outline-none"
               autoComplete="off"
               spellCheck={false}
             />
+              {isDark && input === '' && (
+                <span className="absolute left-0 top-1/2 h-4 w-2 -translate-y-1/2 animate-[loader-caret-blink_1s_infinite] bg-primary/60"></span>
+              )}
+            </div>
           </form>
         </div>
       </div>
@@ -594,7 +589,7 @@ function ProjectsRoute() {
               </div>
               <p className="text-body-md text-on-surface-variant">{project.description}</p>
             </div>
-            <span className="interactive-press inline-flex items-center text-primary hover:text-[#79ffd7]">
+            <span className="interactive-press inline-flex items-center text-primary hover:text-[#86efac]">
               <span className="material-symbols-outlined text-lg leading-none" aria-hidden="true">
                 arrow_outward
               </span>
@@ -734,26 +729,22 @@ function App() {
   }
 
   return (
-    <div className="app-shell flex min-h-screen flex-col bg-background text-on-background selection:bg-primary selection:text-on-primary">
-      <header
-        className={`full-width ${
-          isDark
-            ? 'bg-[linear-gradient(90deg,#171a1f_0%,#11151a_100%)]/95'
-            : 'bg-[linear-gradient(90deg,#eef4ff_0%,#e8effa_100%)]/95'
-        }`}
-      >
+    <div className={`app-shell flex min-h-screen flex-col bg-background text-on-background selection:bg-primary selection:text-on-primary ${isDark ? 'cyber-grid' : ''}`}>
+      {isDark && <div className="cyber-scanline" aria-hidden="true" />}
+      <header className="full-width bg-transparent">
         <nav className="mx-auto flex max-w-[900px] items-center justify-between gap-6 px-6 py-5 font-['Space_Grotesk']">
           <div className="flex min-w-0 items-center gap-4">
             <div className="hidden sm:block">
-              <AKLogo onOpenAbout={() => navigate('/')} />
+              <AKLogo onOpenAbout={() => navigate('/')} isDark={isDark} />
             </div>
             <div className="min-w-0">
               <p
-                className={`truncate text-2xl font-bold tracking-tight sm:text-[1.85rem] ${
-                  isDark ? 'text-[#d1d1d1]' : 'text-slate-800'
+                className={`truncate text-2xl font-bold tracking-tight sm:text-[1.85rem] animate-pulse-subtle ${
+                  isDark ? 'text-[#e5e7eb]' : 'text-slate-800'
                 }`}
               >
                 Arush Khasru
+                <span className="ml-1 inline-block h-[0.8em] w-[8px] bg-primary/60 align-middle animate-[loader-caret-blink_1s_infinite]"></span>
               </p>
               <div className="mt-2 hidden items-center text-base font-semibold md:flex">
                 {navLinks.map((link, index) => {
@@ -771,15 +762,15 @@ function App() {
                       className={`route-link transition-colors ${
                         isDark
                           ? isActive
-                            ? 'text-[#79ffd7]'
-                            : 'text-[#11d6a7] hover:text-[#79ffd7]'
+                            ? 'text-[#86efac]'
+                            : 'text-[#4ade80] hover:text-[#86efac]'
                           : isActive
                             ? 'text-emerald-700'
                             : 'text-emerald-600 hover:text-emerald-700'
                       } ${
                         index !== navLinks.length - 1
                           ? isDark
-                            ? 'mr-4 border-r border-[#11d6a7]/70 pr-4'
+                            ? 'mr-4 border-r border-[#22c55e]/70 pr-4'
                             : 'mr-4 border-r border-emerald-500/70 pr-4'
                           : ''
                       }`}
@@ -800,7 +791,7 @@ function App() {
                 rel={contact.key === 'email' ? undefined : 'noreferrer'}
                 className={`contact-chip inline-flex items-center rounded-full p-2 text-sm ${
                   isDark
-                    ? 'text-slate-300 hover:bg-white/5 hover:text-white'
+                    ? 'text-slate-300 hover:bg-[#2b3a4f] hover:text-[#f8fafc]'
                     : 'text-slate-700 hover:bg-slate-200 hover:text-slate-900'
                 }`}
                 title={`${contact.label}: ${contact.display}`}
@@ -813,7 +804,7 @@ function App() {
               type="button"
               className={`theme-toggle rounded-full p-2 transition-all ${
                 isDark
-                  ? 'text-slate-300 hover:bg-white/5 hover:text-white'
+                  ? 'text-slate-300 hover:bg-[#2b3a4f] hover:text-[#f8fafc]'
                   : 'text-slate-700 hover:bg-slate-200 hover:text-slate-900'
               }`}
               aria-label="Toggle theme"
@@ -848,15 +839,15 @@ function App() {
                 className={`route-link transition-colors ${
                   isDark
                     ? isActive
-                      ? 'text-[#79ffd7]'
-                      : 'text-[#11d6a7] hover:text-[#79ffd7]'
+                      ? 'text-[#86efac]'
+                      : 'text-[#4ade80] hover:text-[#86efac]'
                     : isActive
                       ? 'text-emerald-700'
                       : 'text-emerald-600 hover:text-emerald-700'
                 } ${
                   index !== navLinks.length - 1
                     ? isDark
-                      ? 'mr-3 border-r border-[#11d6a7]/70 pr-3'
+                      ? 'mr-3 border-r border-[#22c55e]/70 pr-3'
                       : 'mr-3 border-r border-emerald-500/70 pr-3'
                     : ''
                 }`}
@@ -882,7 +873,7 @@ function App() {
       <footer className="full-width py-4 text-center">
         <div
           className={`mx-auto max-w-[800px] px-6 text-center font-mono text-xs uppercase tracking-widest ${
-            isDark ? 'text-[#2BBC8A]' : 'text-emerald-700'
+            isDark ? 'text-[#4ade80]' : 'text-emerald-700'
           }`}
         >
           © arushkhasru.me | 2026
