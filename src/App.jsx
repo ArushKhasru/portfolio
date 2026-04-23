@@ -210,20 +210,12 @@ function AKLogo({ onOpenAbout, isDark }) {
     <button
       type="button"
       onClick={onOpenAbout}
-      className={`logo-node relative flex h-[84px] w-[58px] items-center justify-center overflow-hidden rounded-xl ${isDark ? 'cyber-glitch' : ''}`}
+      className={`logo-node relative flex h-[110px] w-[104px] items-center justify-center overflow-hidden rounded-xl ${isDark ? 'logo-node--flicker' : ''}`}
       aria-label="Go to About section"
       title="About"
     >
       <span aria-hidden="true" className="logo-node__pulse absolute inset-0"></span>
-        <svg aria-hidden="true" focusable="false" viewBox="0 0 272 480" xmlns="http://www.w3.org/2000/svg">
-    <title>AK Monogram</title>
-    <path fill={isDark ? "#00ff41" : "#cdffb8"} d="M62 417V123L90 107V401ZM128 382V123L156 107V366ZM88 295V253L116 237V279ZM192 417V123L220 107V401ZM220 221 250 132 272 120 242
-  209ZM220 278 250 366 272 354 242 265Z"/>
-    <path fill={isDark ? "#00cc33" : "#d482ab"} d="M22 146 62 123 90 107 50 130ZM88 146 128 123 156 107 116 130ZM62 268 88 253 116 237 90 252ZM152 146 192 123 220 107 180 130ZM222
-  149 250 132 272 120 244 136ZM192 262 220 278 244 264 216 248Z"/>
-    <path fill={isDark ? "#009926" : "#2abc89"} d="M22 440 62 417V123L22 146ZM88 405 128 382V123L88 146ZM62 310 88 295V253L62 268ZM152 440 192 417V123L152 146ZM192 237 220 221 250
-  132 222 149ZM192 262 220 278 250 366 222 350Z"/>
-  </svg>
+      <img src="/Logo.png" alt="" className="brand-logo" loading="eager" decoding="async" />
     </button>
   )
 }
@@ -526,10 +518,8 @@ function AboutRoute({ onNavigate, activePath, isDark }) {
         <h1 className="font-headline-xl text-headline-xl text-on-surface">
           Hello, World..!
         </h1>
-        <p className="max-w-2xl font-code-md text-body-lg text-on-surface-variant">
-          I am an MCA student and builder focused on real-time systems, full-stack
-          JavaScript products, and practical developer communities. I recently
-          qualified UGC NET (Computer Science), December 2025.
+        <p className="max-w-1xl font-code-md text-body-lg text-on-surface-variant">
+          I am a final-year MCA student with a strong foundation in the MERN stack (MongoDB, Express.js, React, Node.js). I enjoy building full-stack web applications and turning ideas into functional, user-friendly products. I have hands-on experience developing web solutions and continuously strive to improve my skills by exploring new and emerging technologies. I am particularly interested in modern development approaches, including rapid prototyping and “vibe coding,” where creativity and efficiency come together to build intuitive digital experiences. I am eager to contribute, learn, and grow in a dynamic tech environment.
         </p>
         <div className="flex flex-wrap gap-4">
           <a
@@ -567,6 +557,7 @@ function ProjectsRoute() {
             bookmark
           </span>
           Major Projects
+
         </h2>
       </div>
       <div className="space-y-4">
@@ -578,7 +569,7 @@ function ProjectsRoute() {
             rel="noreferrer"
             aria-label={`Open ${project.name} live demo`}
             title={`Open ${project.name} live demo`}
-            className="lift-on-hover group flex cursor-pointer items-start justify-between gap-4 border border-white/10 p-4 transition-colors hover:border-primary/50"
+            className="lift-on-hover group flex cursor-pointer items-start justify-between gap-4 p-4 transition-colors"
           >
             <div className="space-y-2">
               <div className="flex items-center gap-3">
@@ -614,11 +605,11 @@ function SkillsRoute() {
       </div>
       <div className="grid gap-4 md:grid-cols-3">
         {skillGroups.map((group) => (
-          <article key={group.title} className="lift-on-hover border border-white/10 p-4">
+          <article key={group.title} className="lift-on-hover skill-card p-4">
             <h3 className="mb-3 font-headline-md text-body-md text-primary">{group.title}</h3>
-            <ul className="space-y-2">
+            <ul className="skill-card__list mt-2 space-y-2">
               {group.values.map((value) => (
-                <li key={value} className="font-code-md text-sm text-on-surface-variant">
+                <li key={value} className="skill-card__item font-code-md text-sm text-on-surface-variant">
                   {value}
                 </li>
               ))}
@@ -729,7 +720,8 @@ function App() {
   }
 
   return (
-    <div className={`app-shell flex min-h-screen flex-col bg-background text-on-background selection:bg-primary selection:text-on-primary ${isDark ? 'cyber-grid' : ''}`}>
+    <div className={`app-shell flex min-h-screen flex-col bg-background text-on-background selection:bg-primary selection:text-on-primary ${isDark ? 'cyber-grid' : 'dot-grid-light'}`}>
+
       {isDark && <div className="cyber-scanline" aria-hidden="true" />}
       <header className="full-width bg-transparent">
         <nav className="mx-auto flex max-w-[900px] items-center justify-between gap-6 px-6 py-5 font-['Space_Grotesk']">
@@ -791,7 +783,7 @@ function App() {
                 rel={contact.key === 'email' ? undefined : 'noreferrer'}
                 className={`contact-chip inline-flex items-center rounded-full p-2 text-sm ${
                   isDark
-                    ? 'text-slate-300 hover:bg-[#2b3a4f] hover:text-[#f8fafc]'
+                    ? 'text-slate-300 hover:bg-[#4a4a4a] hover:text-[#f8fafc]'
                     : 'text-slate-700 hover:bg-slate-200 hover:text-slate-900'
                 }`}
                 title={`${contact.label}: ${contact.display}`}
@@ -804,7 +796,7 @@ function App() {
               type="button"
               className={`theme-toggle rounded-full p-2 transition-all ${
                 isDark
-                  ? 'text-slate-300 hover:bg-[#2b3a4f] hover:text-[#f8fafc]'
+                  ? 'text-slate-300 hover:bg-[#4a4a4a] hover:text-[#f8fafc]'
                   : 'text-slate-700 hover:bg-slate-200 hover:text-slate-900'
               }`}
               aria-label="Toggle theme"

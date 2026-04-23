@@ -2,9 +2,12 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/react.svg" />
+    <link id="app-favicon" rel="icon" href="/favicon.ico" sizes="any" />
+    <link id="app-shortcut-icon" rel="shortcut icon" href="/favicon.ico" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" type="image/png" href="/Logo.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Arush Khasru | Portfolio</title>
+    <title>Arush Khasru</title>
     <meta
       name="description"
       content="Portfolio of Arush Khasru - MCA student, UGC NET (Computer Science) qualified, and full-stack developer focused on real-time systems."
@@ -23,6 +26,47 @@
           document.documentElement.classList.add('dark')
           document.documentElement.dataset.theme = 'dark'
         }
+      })()
+    </script>
+    <script>
+      ;(() => {
+        const favicon = document.getElementById('app-favicon')
+        const shortcutIcon = document.getElementById('app-shortcut-icon')
+        const faviconFrames = ['/favicon.ico', '/favicon.svg']
+        let frameIndex = 0
+
+        window.setInterval(() => {
+          frameIndex = (frameIndex + 1) % faviconFrames.length
+          const nextHref = faviconFrames[frameIndex]
+          if (favicon) favicon.href = nextHref
+          if (shortcutIcon) shortcutIcon.href = nextHref
+        }, 650)
+
+        const baseTitle = 'Arush Khasru'
+        const cursor = ' |'
+        let titleIndex = 0
+        let deleting = false
+
+        window.setTimeout(() => {
+          window.setInterval(() => {
+            const visible = baseTitle.slice(0, titleIndex)
+            document.title = `${visible}${cursor}`
+
+            if (!deleting) {
+              titleIndex += 1
+              if (titleIndex > baseTitle.length) {
+                deleting = true
+                titleIndex = baseTitle.length
+              }
+            } else {
+              titleIndex -= 1
+              if (titleIndex < 0) {
+                deleting = false
+                titleIndex = 0
+              }
+            }
+          }, 140)
+        }, 5000)
       })()
     </script>
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
