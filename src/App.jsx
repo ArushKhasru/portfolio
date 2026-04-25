@@ -46,7 +46,6 @@ const education = [
     degree: 'B.Sc. (Physics, Computer Science, Mathematics)',
     timeline: '2021 - 2024',
     institute: 'Govt. PG College, Una (Affiliated to HPU Shimla)',
-    notes: 'CGPA: 6.21/10',
   },
 ]
 
