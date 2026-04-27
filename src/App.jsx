@@ -9,6 +9,8 @@ const personalDetails = {
   githubLabel: 'github.com/ArushKhasru',
   linkedin: 'https://linkedin.com/in/arush-khasru',
   linkedinLabel: 'linkedin.com/in/arush-khasru',
+  x: 'https://x.com/khasruaru',
+  xLabel: 'x.com/khasruaru',
 }
 
 const contactProfiles = [
@@ -25,6 +27,13 @@ const contactProfiles = [
     href: personalDetails.linkedin,
     display: personalDetails.linkedinLabel,
     icon: 'linkedin',
+  },
+  {
+    key: 'x',
+    label: 'X',
+    href: personalDetails.x,
+    display: personalDetails.xLabel,
+    icon: 'x',
   },
   {
     key: 'email',
@@ -232,6 +241,14 @@ function ContactBrandIcon({ brand, className = 'h-[18px] w-[18px]' }) {
     return (
       <svg viewBox="0 0 16 16" className={className} fill="currentColor" aria-hidden="true">
         <path d="M0 1.146C0 .513.526 0 1.175 0h13.65C15.474 0 16 .513 16 1.146v13.708c0 .633-.526 1.146-1.175 1.146H1.175C.526 16 0 15.487 0 14.854zM4.943 13.394V6.169H2.542v7.225zm-1.2-8.212c.837 0 1.358-.554 1.358-1.248-.015-.709-.52-1.248-1.342-1.248S2.4 3.226 2.4 3.934c0 .694.521 1.248 1.327 1.248m4.908 8.212V9.359c0-.216.016-.432.08-.586.173-.431.568-.878 1.232-.878.869 0 1.216.662 1.216 1.634v3.865h2.401V9.25c0-2.22-1.184-3.252-2.764-3.252-1.274 0-1.845.7-2.165 1.193v.025H8.84l.016-.025V6.169h-2.4c.03.678 0 7.225 0 7.225z" />
+      </svg>
+    )
+  }
+
+  if (brand === 'x') {
+    return (
+      <svg viewBox="0 0 24 24" className={className} fill="currentColor" aria-hidden="true">
+        <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24h-6.657l-5.207-6.807-5.974 6.807H2.882l7.432-8.491L1.24 2.25h6.837l4.866 6.44 5.469-6.44zM17.15 18.75h1.828L5.693 4.069H3.75z" />
       </svg>
     )
   }
