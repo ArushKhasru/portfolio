@@ -44,27 +44,33 @@
 
         const baseTitle = 'Arush Khasru'
         const cursor = ' |'
-        let titleIndex = 0
-        let deleting = false
+        let eraseIndex = 0
+        let typingCount = 0
+        let deleting = true
 
         window.setTimeout(() => {
           window.setInterval(() => {
-            const visible = baseTitle.slice(0, titleIndex)
-            document.title = `${visible}${cursor}`
+            let visible = ''
 
-            if (!deleting) {
-              titleIndex += 1
-              if (titleIndex > baseTitle.length) {
-                deleting = true
-                titleIndex = baseTitle.length
+            if (deleting) {
+              visible = baseTitle.slice(eraseIndex)
+              eraseIndex += 1
+              if (eraseIndex > baseTitle.length) {
+                deleting = false
+                eraseIndex = 0
+                typingCount = 0
               }
             } else {
-              titleIndex -= 1
-              if (titleIndex < 0) {
-                deleting = false
-                titleIndex = 0
+              typingCount += 1
+              visible = baseTitle.slice(0, typingCount)
+              if (typingCount >= baseTitle.length) {
+                deleting = true
+                eraseIndex = 0
+                typingCount = 0
               }
             }
+
+            document.title = `${visible}${cursor}`
           }, 140)
         }, 5000)
       })()
