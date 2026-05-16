@@ -4,7 +4,7 @@ import './App.css'
 const personalDetails = {
   name: 'Arush Khasru',
   nationality: 'Indian',
-  email: 'arushku23@gmail.com',
+  email: 'contact@arushkhasru.me',
   github: 'https://github.com/ArushKhasru',
   githubLabel: 'github.com/ArushKhasru',
   linkedin: 'https://linkedin.com/in/arush-khasru',
