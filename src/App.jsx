@@ -61,18 +61,27 @@ const education = [
 const examsQualified = [
   {
     name: 'UGC NET (Computer Science)',
-    session: 'December 2025',
+    timeline: 'DEC - 2025',
     detail: 'Eligible for Assistant Professor and PhD Admission',
   },
 ]
 
 const projects = [
   {
+    name: 'perky',
+    stack: 'Node.js | Commander | AI',
+    description:
+      'A CLI workspace launcher and AI assistant for developers. Simplifies managing local development services and provides terminal-based Q&A and code explanations using Gemini and OpenAI.',
+      demoUrl:'https://www.npmjs.com/package/perky',
+      githubUrl: 'https://github.com/ArushKhasru/perky',
+  },
+  {
     name: 'BakBak 2.0',
     stack: 'Next.js 16 | React 19',
     description:
       'Real-time community and direct-messaging platform built with Clerk authentication, Stream Chat, and Tailwind CSS.',
     demoUrl: 'https://bak-bak-2-0.vercel.app',
+    githubUrl: 'https://github.com/ArushKhasru/BakBak-2.0',
   },
   {
     name: 'CUHP Devs',
@@ -80,6 +89,7 @@ const projects = [
     description:
       'Student developer community and coding-practice platform built as a Turborepo monorepo with MongoDB.',
     demoUrl: 'http://cuhp-devs-web.vercel.app/',
+    githubUrl: 'https://github.com/ArushKhasru/cuhp-devs',
   },
   {
     name: 'OpenEnv Bug Triage',
@@ -87,6 +97,7 @@ const projects = [
     description:
       'Bug triage environment with Pydantic models, ticket classification, duplicate detection, and escalation workflows.',
     demoUrl: 'https://huggingface.co/spaces/TheOnlyKaks/my-env',
+    githubUrl: 'https://github.com/ArushKhasru/openenv_bug_triage',
   },
   {
     name: 'Socratic AI',
@@ -94,6 +105,7 @@ const projects = [
     description:
       'An intelligent chat-based learning app that uses guided questioning (Socratic method) instead of direct answers.',
     demoUrl: 'https://socratic-ai-web-one.vercel.app/',
+    githubUrl: 'https://github.com/ArushKhasru/Socratic_AI',
   },
 ]
 
@@ -573,19 +585,13 @@ function ProjectsRoute() {
             bookmark
           </span>
           Major Projects
-
         </h2>
       </div>
       <div className="space-y-4">
         {projects.map((project) => (
-          <a
+          <div
             key={project.name}
-            href={project.demoUrl}
-            target="_blank"
-            rel="noreferrer"
-            aria-label={`Open ${project.name} live demo`}
-            title={`Open ${project.name} live demo`}
-            className="lift-on-hover group flex cursor-pointer items-start justify-between gap-4 p-4 transition-colors"
+            className="lift-on-hover group flex flex-col justify-between gap-3 border border-white/10 p-4 transition-colors"
           >
             <div className="space-y-2">
               <div className="flex items-center gap-3">
@@ -596,12 +602,35 @@ function ProjectsRoute() {
               </div>
               <p className="text-body-md text-on-surface-variant">{project.description}</p>
             </div>
-            <span className="interactive-press inline-flex items-center text-primary hover:text-[#86efac]">
-              <span className="material-symbols-outlined text-lg leading-none" aria-hidden="true">
-                arrow_outward
-              </span>
-            </span>
-          </a>
+            <div className="flex items-center gap-4 mt-2">
+              {project.githubUrl && (
+                <a
+                  href={project.githubUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="interactive-press inline-flex items-center gap-1.5 text-sm text-primary hover:text-[#86efac]"
+                  title={`Open ${project.name} GitHub Repository`}
+                >
+                  <ContactBrandIcon brand="github" className="h-[16px] w-[16px]" />
+                  <span>GitHub</span>
+                </a>
+              )}
+              {project.demoUrl && (
+                <a
+                  href={project.demoUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="interactive-press inline-flex items-center gap-1.5 text-sm text-primary hover:text-[#86efac]"
+                  title={`Open ${project.name} live demo`}
+                >
+                  <span className="material-symbols-outlined text-lg leading-none" aria-hidden="true">
+                    arrow_outward
+                  </span>
+                  <span>Demo</span>
+                </a>
+              )}
+            </div>
+          </div>
         ))}
       </div>
     </section>
@@ -664,9 +693,12 @@ function EducationRoute() {
         <h3 className="font-headline-md text-body-md text-primary">Exams Qualified</h3>
         <ul className="mt-2 space-y-2">
           {examsQualified.map((exam) => (
-            <li key={exam.name} className="text-body-md text-on-surface-variant">
-              <span className="font-medium text-on-surface">{exam.name}</span> ({exam.session}) -{' '}
-              {exam.detail}
+            <li key={exam.name} className="text-body-md text-on-surface-variant space-y-1">
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <span className="font-medium text-on-surface">{exam.name}</span>
+                <span className="font-code-md text-xs text-on-surface-variant/60">{exam.timeline}</span>
+              </div>
+              <p className="text-sm text-on-surface-variant">{exam.detail}</p>
             </li>
           ))}
         </ul>
