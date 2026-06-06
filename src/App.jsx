@@ -190,9 +190,9 @@ function StartupLoader({ isDark, onComplete }) {
   const [typedName, setTypedName] = useState('')
   const [lineProgress, setLineProgress] = useState(0)
   const hasCompletedRef = useRef(false)
-  const TYPE_DELAY_MS = 45
-  const LINE_PROGRESS_DELAY_MS = 32
-  const FINAL_HOLD_MS = 240
+  const TYPE_DELAY_MS = 175
+  const LINE_PROGRESS_DELAY_MS = 60
+  const FINAL_HOLD_MS = 50
 
   useEffect(() => {
     let timer = undefined
