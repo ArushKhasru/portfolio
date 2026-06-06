@@ -10,6 +10,7 @@
 }
 
 .app-shell {
+  min-height: 100dvh;
   transition:
     background-color 220ms ease,
     color 220ms ease;
@@ -51,7 +52,7 @@
   display: inline-block;
   color: #4ade80;
   font-weight: 700;
-  letter-spacing: 0.07em;
+  letter-spacing: 0;
 }
 
 .startup-loader__name {
@@ -104,7 +105,6 @@
 
 :root[data-theme='dark'] .text-on-background {
   color: #d1d5db !important;
-  text-shadow: 0 0 5px rgba(74, 222, 128, 0.2);
 }
 
 :root[data-theme='dark'] .bg-surface-container-lowest {
@@ -115,7 +115,6 @@
 
 :root[data-theme='dark'] .text-on-surface {
   color: #ffffff !important;
-  text-shadow: 0 0 8px rgba(74, 222, 128, 0.3);
 }
 
 :root[data-theme='dark'] .text-on-surface-variant {
@@ -144,7 +143,6 @@
 
 :root[data-theme='dark'] .text-primary {
   color: #4ade80 !important;
-  text-shadow: 0 0 10px rgba(74, 222, 128, 0.6);
 }
 
 /* Cyber Theme Additions */
@@ -185,22 +183,11 @@
   animation: neon-flicker 4s linear infinite;
 }
 
-
-@keyframes title-pulse {
-  0%, 100% { opacity: 1; filter: brightness(1); }
-  50% { opacity: 0.9; filter: brightness(1.2); }
-}
-
-.animate-pulse-subtle {
-  animation: title-pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-}
-
-
 .cyber-grid {
-  background-size: 40px 40px;
+  background-size: 56px 56px;
   background-image: 
-    linear-gradient(to right, rgba(34, 197, 94, 0.05) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(34, 197, 94, 0.05) 1px, transparent 1px);
+    linear-gradient(to right, rgba(34, 197, 94, 0.028) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(34, 197, 94, 0.028) 1px, transparent 1px);
 }
 
 .dot-grid-light {
@@ -356,8 +343,8 @@
   width: 100%;
   height: 100%;
   object-fit: contain;
-  border-radius: 10px;
-  filter: drop-shadow(0 10px 16px rgb(6 40 30 / 0.35));
+  border-radius: 8px;
+  filter: drop-shadow(0 5px 10px rgb(6 40 30 / 0.3));
   mix-blend-mode: screen;
   transform-origin: center;
   transform: rotate(-8deg);
@@ -367,15 +354,15 @@
 }
 
 .logo-node:active .brand-logo {
-  transform: rotate(-8deg) scale(0.99);
+  transform: rotate(-8deg) scale(0.97);
 }
 
 .route-link {
   position: relative;
   transform: translateY(0);
   font-family: 'Code', monospace;
-  font-size: 0.95rem;
-  letter-spacing: -0.01em;
+  font-size: 0.84rem;
+  letter-spacing: 0;
   transition:
     color 180ms ease,
     transform 180ms ease,
@@ -398,7 +385,6 @@
 
 .route-link:hover {
   transform: translateY(-1px);
-  text-shadow: 0 0 12px rgba(74, 222, 128, 0.4);
 }
 
 .route-link[data-active='true']::after {
@@ -433,7 +419,7 @@
 }
 
 .lift-on-hover {
-  border-radius: 12px;
+  border-radius: 8px;
   transition:
     transform 180ms ease,
     box-shadow 180ms ease,
@@ -533,7 +519,7 @@
   border: 1px solid transparent;
   font-size: 12px;
   font-weight: 700;
-  letter-spacing: 0.08em;
+  letter-spacing: 0;
   text-transform: uppercase;
   text-decoration: none;
   transform: translateY(0);
@@ -571,14 +557,13 @@
   background: #2b2b2b;
   color: #4ade80;
   border: 1px solid #4ade80;
-  box-shadow: 0 0 15px rgba(74, 222, 128, 0.4);
-  text-shadow: 0 0 5px rgba(74, 222, 128, 0.6);
+  box-shadow: 0 8px 20px -16px rgba(74, 222, 128, 0.8);
 }
 
 :root[data-theme='dark'] .action-btn-primary:hover {
   background: #4ade80;
   color: #000;
-  box-shadow: 0 0 25px rgba(74, 222, 128, 0.7);
+  box-shadow: 0 10px 22px -14px rgba(74, 222, 128, 0.75);
 }
 
 .action-btn-primary:hover {
@@ -603,7 +588,7 @@
 }
 
 .terminal-shell {
-  border-radius: 12px;
+  border-radius: 8px;
   box-shadow: 0 20px 40px -34px rgb(10 15 20 / 0.95);
   transition:
     box-shadow 220ms ease,
@@ -725,6 +710,153 @@
 :root[data-theme='light'] .brand-logo {
   mix-blend-mode: normal;
   filter: drop-shadow(0 8px 14px rgb(15 23 42 / 0.22));
+}
+
+.site-header {
+  position: fixed;
+  top: 0;
+  right: 0;
+  left: 0;
+  z-index: 40;
+}
+
+:root[data-theme='dark'] .site-header {
+  background: oklch(23.64% 0.0045 248);
+}
+
+:root[data-theme='light'] .site-header {
+  background: #f8fafc;
+}
+
+.site-footer {
+  position: static;
+}
+
+.site-main {
+  padding-top: 138px;
+  padding-bottom: 36px;
+}
+
+.brand-name {
+  margin: 0;
+  white-space: nowrap;
+  font-size: 1.25rem;
+  line-height: 1.15;
+  letter-spacing: 0;
+}
+
+.text-headline-xl,
+.text-headline-lg {
+  letter-spacing: 0 !important;
+}
+
+.profession-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.profession-tag {
+  display: inline-flex;
+  align-items: center;
+  min-height: 28px;
+  padding: 5px 9px;
+  border: 1px solid rgb(74 222 128 / 0.28);
+  border-radius: 4px;
+  background: rgb(74 222 128 / 0.07);
+  color: #86efac;
+  font-family: monospace;
+  font-size: 0.75rem;
+  line-height: 1.2;
+}
+
+:root[data-theme='light'] .profession-tag {
+  border-color: rgb(5 150 105 / 0.24);
+  background: rgb(5 150 105 / 0.07);
+  color: #047857;
+}
+
+.project-stack {
+  max-width: 100%;
+  border-radius: 4px;
+  line-height: 1.3;
+  overflow-wrap: anywhere;
+}
+
+.terminal-line > :last-child {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.site-footer__content {
+  min-height: 46px;
+  letter-spacing: 0;
+  text-align: center;
+}
+
+.footer-copy {
+  white-space: nowrap;
+  font-size: 0.68rem;
+}
+
+@media (min-width: 768px) {
+  .brand-name {
+    font-size: 1.85rem;
+  }
+
+  .site-main {
+    padding-top: 190px;
+    padding-bottom: 40px;
+  }
+
+  .footer-copy {
+    font-size: 0.75rem;
+  }
+}
+
+@media (max-width: 767px) {
+  :root[data-theme='dark'] .site-header {
+    border-bottom: 1px solid rgb(74 222 128 / 0.14);
+  }
+
+  :root[data-theme='light'] .site-header {
+    border-bottom: 1px solid rgb(15 23 42 / 0.1);
+  }
+
+  .mobile-nav .route-link {
+    padding: 5px 4px;
+    font-size: 0.72rem;
+  }
+
+  .terminal-line,
+  .terminal-shell form {
+    gap: 8px;
+  }
+
+  .terminal-prompt {
+    font-size: 0.72rem;
+  }
+}
+
+@media (max-width: 380px) {
+  .site-header__primary,
+  .mobile-nav,
+  .site-footer__content {
+    padding-right: 16px;
+    padding-left: 16px;
+  }
+
+  .brand-name {
+    font-size: 1.05rem;
+  }
+
+  .about-intro h1 {
+    font-size: 1.85rem;
+  }
+
+  .footer-copy {
+    font-size: 0.62rem;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

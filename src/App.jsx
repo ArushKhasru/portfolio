@@ -127,7 +127,11 @@ const skillGroups = [
     values: ['MongoDB', 'MySQL'],
   },
   {
-    title: 'Tools',
+    title: 'Cloud & Deployment',
+    values: ['Vercel', 'Render', 'AWS EC2', 'Hugging Face Spaces'],
+  },
+  {
+    title: 'Developer Tools',
     values: ['Git', 'GitHub', 'Figma', 'Postman', 'npm'],
   },
   {
@@ -173,14 +177,22 @@ function getInitialTheme() {
   return window.matchMedia('(prefers-color-scheme: dark)').matches
 }
 
+function getInitialLoaderVisibility() {
+  if (typeof window === 'undefined') {
+    return false
+  }
+
+  return window.sessionStorage.getItem('portfolio-intro-seen') !== 'true'
+}
+
 function StartupLoader({ isDark, onComplete }) {
   const loaderName = 'ARUSH_KHASRU'
   const [typedName, setTypedName] = useState('')
   const [lineProgress, setLineProgress] = useState(0)
   const hasCompletedRef = useRef(false)
-  const TYPE_DELAY_MS = 100
-  const LINE_PROGRESS_DELAY_MS = 80
-  const FINAL_HOLD_MS = 600
+  const TYPE_DELAY_MS = 45
+  const LINE_PROGRESS_DELAY_MS = 32
+  const FINAL_HOLD_MS = 240
 
   useEffect(() => {
     let timer = undefined
@@ -230,7 +242,7 @@ function AKLogo({ onOpenAbout, isDark }) {
     <button
       type="button"
       onClick={onOpenAbout}
-      className={`logo-node relative flex h-[110px] w-[104px] items-center justify-center overflow-hidden rounded-xl ${isDark ? 'logo-node--flicker' : ''}`}
+      className={`logo-node relative flex h-[46px] w-[46px] shrink-0 items-center justify-center overflow-hidden rounded-lg md:h-[110px] md:w-[104px] md:rounded-xl ${isDark ? 'logo-node--flicker' : ''}`}
       aria-label="Go to About section"
       title="About"
     >
@@ -278,7 +290,7 @@ function TerminalPanel({ onNavigate, activePath, isDark }) {
   const promptPrefix = `arush@portfolio:${activeRoute}`
   const scrollRef = useRef(null)
   const [entries, setEntries] = useState([
-    { kind: 'output', tone: 'normal', text: `Welcome to /portfolio/${activeRoute}` },
+    { kind: 'output', tone: 'normal', text: `Welcome to Arush Portfolio` },
     {
       kind: 'output',
       tone: 'normal',
@@ -346,7 +358,13 @@ Down Arrow                   - next command`,
     }
 
     if (normalized === 'whoami') {
-      appendOutput('arush_khasru - MCA student, full-stack developer, UGC NET (CS) qualified.')
+      appendOutput(
+        `Arush Khasru
+Role: Full-stack developer (MERN, Next.js, FastAPI)
+Focus: Real-time systems, AI applications, and developer tools
+Education: Final-year MCA | UGC NET (Computer Science), Dec 2025
+Location: India`,
+      )
       return
     }
 
@@ -465,7 +483,7 @@ Down Arrow                   - next command`,
 
   return (
     <section className="space-y-4">
-      <div className="terminal-shell flex h-[420px] flex-col overflow-hidden border border-white/15 bg-surface-container-lowest">
+      <div className="terminal-shell flex h-[340px] flex-col overflow-hidden border border-white/15 bg-surface-container-lowest">
         <div className="flex items-center justify-between border-b border-white/10 bg-white/5 px-4 py-2">
           <div className="flex gap-1.5">
             <div className="h-3 w-3 rounded-full bg-[#ff5f56]"></div>
@@ -476,7 +494,7 @@ Down Arrow                   - next command`,
             portfolio.zsh - interactive
           </div>
         </div>
-        <div className="flex min-h-0 flex-1 flex-col p-6 font-code-md text-sm leading-relaxed text-primary">
+        <div className="flex min-h-0 flex-1 flex-col p-4 font-code-md text-sm leading-relaxed text-primary sm:p-6">
           <div
             ref={scrollRef}
             className="terminal-scrollbar-none min-h-0 flex-1 space-y-2 overflow-y-auto pr-1"
@@ -542,31 +560,33 @@ Down Arrow                   - next command`,
 function AboutRoute({ onNavigate, activePath, isDark }) {
   return (
     <>
-      <section className="space-y-6">
+      <section className="about-intro space-y-5">
         <h1 className="font-headline-xl text-headline-xl text-on-surface">
-          Hello, World..!
+          Hello, World...!
         </h1>
-        <p className="max-w-1xl font-code-md text-body-lg text-on-surface-variant">
-          I am a final-year MCA student with a strong foundation in the MERN stack (MongoDB, Express.js, React, Node.js). I enjoy building full-stack web applications and turning ideas into functional, user-friendly products. I have hands-on experience developing web solutions and continuously strive to improve my skills by exploring new and emerging technologies. I am particularly interested in modern development approaches, including rapid prototyping and “vibe coding,” where creativity and efficiency come together to build intuitive digital experiences. I am eager to contribute, learn, and grow in a dynamic tech environment.
+        <div className="profession-tags" aria-label="Professional focus">
+          {['Full-stack Developer', 'MERN Stack', 'AI'].map(
+            (tag) => (
+              <span key={tag} className="profession-tag">
+                {tag}
+              </span>
+            ),
+          )}
+        </div>
+        <p className="font-code-md text-body-lg text-on-surface-variant">
+          Full-stack developer building real-time applications, interactive AI assistants,
+          and developer tools using Next.js, FastAPI, Node.js, and Socket.IO.
         </p>
-        <div className="flex flex-wrap gap-4">
+        <div className="flex flex-wrap gap-3">
           <a
             href="/Arush_CV.pdf"
+            download
             className="action-btn action-btn-primary"
           >
             <span className="material-symbols-outlined text-base" aria-hidden="true">
               download
             </span>
             Download CV
-          </a>
-          <a
-            href={`mailto:${personalDetails.email}`}
-            className="action-btn action-btn-ghost"
-          >
-            <span className="material-symbols-outlined text-base" aria-hidden="true">
-              mail
-            </span>
-            Contact Me
           </a>
         </div>
       </section>
@@ -594,9 +614,9 @@ function ProjectsRoute() {
             className="lift-on-hover group flex flex-col justify-between gap-3 border border-white/10 p-4 transition-colors"
           >
             <div className="space-y-2">
-              <div className="flex items-center gap-3">
+              <div className="project-heading flex flex-wrap items-center gap-3">
                 <h3 className="font-headline-md text-body-lg text-on-surface">{project.name}</h3>
-                <span className="border border-primary/30 px-1.5 py-0.5 font-code-md text-[10px] text-primary">
+                <span className="project-stack border border-primary/30 px-2 py-1 font-code-md text-[10px] text-primary">
                   {project.stack}
                 </span>
               </div>
@@ -689,7 +709,7 @@ function EducationRoute() {
           </article>
         ))}
       </div>
-      <article className="rounded-xl border border-primary/30 bg-primary/5 p-4">
+      <article className="rounded-lg border border-primary/30 bg-primary/5 p-4">
         <h3 className="font-headline-md text-body-md text-primary">Exams Qualified</h3>
         <ul className="mt-2 space-y-2">
           {examsQualified.map((exam) => (
@@ -709,7 +729,7 @@ function EducationRoute() {
 
 function App() {
   const [isDark, setIsDark] = useState(getInitialTheme)
-  const [showStartupLoader, setShowStartupLoader] = useState(true)
+  const [showStartupLoader, setShowStartupLoader] = useState(getInitialLoaderVisibility)
   const [currentPath, setCurrentPath] = useState(() => {
     if (typeof window === 'undefined') {
       return '/'
@@ -760,6 +780,7 @@ function App() {
   }
 
   const handleStartupComplete = useCallback(() => {
+    window.sessionStorage.setItem('portfolio-intro-seen', 'true')
     setShowStartupLoader(false)
   }, [])
 
@@ -771,22 +792,22 @@ function App() {
     <div className={`app-shell flex min-h-screen flex-col bg-background text-on-background selection:bg-primary selection:text-on-primary ${isDark ? 'cyber-grid' : 'dot-grid-light'}`}>
 
       {isDark && <div className="cyber-scanline" aria-hidden="true" />}
-      <header className="full-width bg-transparent">
-        <nav className="mx-auto flex max-w-[900px] items-center justify-between gap-6 px-6 py-5 font-['Space_Grotesk']">
-          <div className="flex min-w-0 items-center gap-4">
-            <div className="hidden sm:block">
-              <AKLogo onOpenAbout={() => navigate('/')} isDark={isDark} />
-            </div>
+      <header className="site-header full-width">
+        <nav
+          className="site-header__primary mx-auto flex max-w-[960px] items-center justify-between gap-4 px-5 py-3 font-['Space_Grotesk'] md:max-w-[900px] md:gap-6 md:px-6 md:py-5"
+          aria-label="Primary navigation"
+        >
+          <div className="flex min-w-0 items-center gap-3 md:gap-4">
+            <AKLogo onOpenAbout={() => navigate('/')} isDark={isDark} />
             <div className="min-w-0">
               <p
-                className={`truncate text-2xl font-bold tracking-tight sm:text-[1.85rem] animate-pulse-subtle ${
+                className={`brand-name font-bold ${
                   isDark ? 'text-[#e5e7eb]' : 'text-slate-800'
                 }`}
               >
                 Arush Khasru
-                <span className="ml-1 inline-block h-[0.8em] w-[8px] bg-primary/60 align-middle animate-[loader-caret-blink_1s_infinite]"></span>
               </p>
-              <div className="mt-2 hidden items-center text-base font-semibold md:flex">
+              <div className="mt-1 hidden items-center text-base font-semibold md:flex">
                 {navLinks.map((link, index) => {
                   const isActive = currentPath === link.href
                   return (
@@ -810,8 +831,8 @@ function App() {
                       } ${
                         index !== navLinks.length - 1
                           ? isDark
-                            ? 'mr-4 border-r border-[#22c55e]/70 pr-4'
-                            : 'mr-4 border-r border-emerald-500/70 pr-4'
+                            ? 'mr-3 border-r border-[#22c55e]/50 pr-3'
+                            : 'mr-3 border-r border-emerald-500/50 pr-3'
                           : ''
                       }`}
                     >
@@ -822,29 +843,31 @@ function App() {
               </div>
             </div>
           </div>
-          <div className="flex items-center gap-2">
-            {contactProfiles.map((contact) => (
-              <a
-                key={contact.key}
-                href={contact.href}
-                target={contact.key === 'email' ? undefined : '_blank'}
-                rel={contact.key === 'email' ? undefined : 'noreferrer'}
-                className={`contact-chip inline-flex items-center rounded-full p-2 text-sm ${
-                  isDark
-                    ? 'text-slate-300 hover:bg-[#4a4a4a] hover:text-[#f8fafc]'
-                    : 'text-slate-700 hover:bg-slate-200 hover:text-slate-900'
-                }`}
-                title={`${contact.label}: ${contact.display}`}
-                aria-label={`${contact.label}: ${contact.display}`}
-              >
-                <ContactBrandIcon brand={contact.icon} />
-              </a>
-            ))}
+          <div className="flex shrink-0 items-center gap-1">
+            <div className="hidden items-center gap-1 md:flex">
+              {contactProfiles.map((contact) => (
+                <a
+                  key={contact.key}
+                  href={contact.href}
+                  target={contact.key === 'email' ? undefined : '_blank'}
+                  rel={contact.key === 'email' ? undefined : 'noreferrer'}
+                  className={`contact-chip inline-flex items-center rounded-full p-2 text-sm ${
+                    isDark
+                      ? 'text-slate-300 hover:bg-[#363a38] hover:text-[#f8fafc]'
+                      : 'text-slate-700 hover:bg-slate-200 hover:text-slate-900'
+                  }`}
+                  title={`${contact.label}: ${contact.display}`}
+                  aria-label={`${contact.label}: ${contact.display}`}
+                >
+                  <ContactBrandIcon brand={contact.icon} />
+                </a>
+              ))}
+            </div>
             <button
               type="button"
               className={`theme-toggle rounded-full p-2 transition-all ${
                 isDark
-                  ? 'text-slate-300 hover:bg-[#4a4a4a] hover:text-[#f8fafc]'
+                  ? 'text-slate-300 hover:bg-[#363a38] hover:text-[#f8fafc]'
                   : 'text-slate-700 hover:bg-slate-200 hover:text-slate-900'
               }`}
               aria-label="Toggle theme"
@@ -863,7 +886,7 @@ function App() {
             </button>
           </div>
         </nav>
-        <div className="mx-auto flex max-w-[900px] flex-wrap items-center px-6 pb-4 text-[13px] font-semibold md:hidden">
+        <div className="mobile-nav mx-auto grid max-w-[960px] grid-cols-4 items-center px-5 pb-3 text-center text-[12px] font-semibold md:hidden">
           {navLinks.map((link, index) => {
             const isActive = currentPath === link.href
             return (
@@ -887,8 +910,8 @@ function App() {
                 } ${
                   index !== navLinks.length - 1
                     ? isDark
-                      ? 'mr-3 border-r border-[#22c55e]/70 pr-3'
-                      : 'mr-3 border-r border-emerald-500/70 pr-3'
+                      ? 'border-r border-[#22c55e]/40'
+                      : 'border-r border-emerald-500/40'
                     : ''
                 }`}
               >
@@ -899,8 +922,8 @@ function App() {
         </div>
       </header>
 
-      <main className="mx-auto w-full max-w-[800px] flex-1 px-6 py-10">
-        <div key={currentPath} className="route-stage space-y-16">
+      <main id="main-content" className="site-main mx-auto w-full max-w-[840px] flex-1 px-5 sm:px-6">
+        <div key={currentPath} className="route-stage space-y-12 sm:space-y-14">
           {currentPath === '/' && (
             <AboutRoute onNavigate={navigate} activePath={currentPath} isDark={isDark} />
           )}
@@ -910,13 +933,28 @@ function App() {
         </div>
       </main>
 
-      <footer className="full-width py-4 text-center">
+      <footer className="site-footer full-width">
         <div
-          className={`mx-auto max-w-[800px] px-6 text-center font-mono text-xs uppercase tracking-widest ${
+          className={`site-footer__content mx-auto flex max-w-[960px] items-center justify-center gap-3 px-5 py-3 font-mono text-xs uppercase md:max-w-[800px] md:px-6 md:py-4 md:text-center md:tracking-widest ${
             isDark ? 'text-[#4ade80]' : 'text-emerald-700'
           }`}
         >
-          © arushkhasru.me | 2026
+          <span className="footer-copy">© arushkhasru.me · 2026</span>
+          <div className="flex items-center gap-1 md:hidden" aria-label="Contact links">
+            {contactProfiles.map((contact) => (
+              <a
+                key={contact.key}
+                href={contact.href}
+                target={contact.key === 'email' ? undefined : '_blank'}
+                rel={contact.key === 'email' ? undefined : 'noreferrer'}
+                className="contact-chip inline-flex items-center rounded-full p-1.5"
+                title={`${contact.label}: ${contact.display}`}
+                aria-label={`${contact.label}: ${contact.display}`}
+              >
+                <ContactBrandIcon brand={contact.icon} className="h-[16px] w-[16px]" />
+              </a>
+            ))}
+          </div>
         </div>
       </footer>
     </div>

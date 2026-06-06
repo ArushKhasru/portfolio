@@ -28,53 +28,6 @@
         }
       })()
     </script>
-    <script>
-      ;(() => {
-        const favicon = document.getElementById('app-favicon')
-        const shortcutIcon = document.getElementById('app-shortcut-icon')
-        const faviconFrames = ['/favicon.ico', '/favicon.svg']
-        let frameIndex = 0
-
-        window.setInterval(() => {
-          frameIndex = (frameIndex + 1) % faviconFrames.length
-          const nextHref = faviconFrames[frameIndex]
-          if (favicon) favicon.href = nextHref
-          if (shortcutIcon) shortcutIcon.href = nextHref
-        }, 650)
-
-        const baseTitle = 'Arush Khasru'
-        const cursor = ' |'
-        let eraseIndex = 0
-        let typingCount = 0
-        let deleting = true
-
-        window.setTimeout(() => {
-          window.setInterval(() => {
-            let visible = ''
-
-            if (deleting) {
-              visible = baseTitle.slice(eraseIndex)
-              eraseIndex += 1
-              if (eraseIndex > baseTitle.length) {
-                deleting = false
-                eraseIndex = 0
-                typingCount = 0
-              }
-            } else {
-              typingCount += 1
-              visible = baseTitle.slice(0, typingCount)
-              if (typingCount >= baseTitle.length) {
-                deleting = true
-                eraseIndex = 0
-                typingCount = 0
-              }
-            }
-
-            document.title = `${visible}${cursor}`
-          }, 140)
-        }, 5000)
-      })()
-    </script>
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
     <link
       href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap"
