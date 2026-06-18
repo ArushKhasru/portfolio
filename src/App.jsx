@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import './App.css'
+import DecorativeVines from './assets/components/DecorativeVines'
 
 const personalDetails = {
   name: 'Arush Khasru',
@@ -7,10 +8,23 @@ const personalDetails = {
   email: 'contact@arushkhasru.me',
   github: 'https://github.com/ArushKhasru',
   githubLabel: 'github.com/ArushKhasru',
+  githubUsername: 'ArushKhasru',
   linkedin: 'https://linkedin.com/in/arush-khasru',
   linkedinLabel: 'linkedin.com/in/arush-khasru',
   x: 'https://x.com/khasruaru',
   xLabel: 'x.com/khasruaru',
+}
+
+const GITHUB_PULL_REQUESTS_CACHE_KEY = 'portfolio-github-open-source-pull-requests'
+const GITHUB_PULL_REQUESTS_CACHE_MAX_AGE_MS = 5 * 60 * 1000
+const GITHUB_PULL_REQUESTS_PER_PAGE = 100
+const GITHUB_PULL_REQUESTS_MAX_PAGES = 10
+
+const defaultGithubPullRequestData = {
+  repositories: [],
+  totalCount: 0,
+  fetchedCount: 0,
+  updatedAt: undefined,
 }
 
 const contactProfiles = [
@@ -72,8 +86,8 @@ const projects = [
     stack: 'Node.js | Commander | AI',
     description:
       'A CLI workspace launcher and AI assistant for developers. Simplifies managing local development services and provides terminal-based Q&A and code explanations using Gemini and OpenAI.',
-      demoUrl:'https://www.npmjs.com/package/perky',
-      githubUrl: 'https://github.com/ArushKhasru/perky',
+    demoUrl: 'https://www.npmjs.com/package/perky',
+    githubUrl: 'https://github.com/ArushKhasru/perky',
   },
   {
     name: 'BakBak 2.0',
@@ -120,7 +134,7 @@ const skillGroups = [
   },
   {
     title: 'Backend',
-    values: ['Node.js', 'Express', 'Socket.IO','WebSocket', 'FastAPI', 'Mongoose'],
+    values: ['Node.js', 'Express', 'Socket.IO', 'WebSocket', 'FastAPI', 'Mongoose'],
   },
   {
     title: 'Databases',
@@ -143,6 +157,7 @@ const skillGroups = [
 const navLinks = [
   { label: 'About', href: '/' },
   { label: 'Projects', href: '/projects' },
+  { label: 'Open Source', href: '/open-source' },
   { label: 'Skills', href: '/skills' },
   { label: 'Education', href: '/education' },
 ]
@@ -152,6 +167,10 @@ function normalizePath(pathname) {
 
   if (pathname === '/about') {
     return '/'
+  }
+
+  if (pathname === '/open-prs') {
+    return '/open-source'
   }
 
   return validPaths.includes(pathname) ? pathname : '/'
@@ -185,35 +204,291 @@ function getInitialLoaderVisibility() {
   return window.sessionStorage.getItem('portfolio-intro-seen') !== 'true'
 }
 
+function formatGithubCount(value) {
+  return typeof value === 'number' ? new Intl.NumberFormat('en').format(value) : '--'
+}
+
+function getCachedGithubPullRequests() {
+  if (typeof window === 'undefined') {
+    return undefined
+  }
+
+  try {
+    const cachedPullRequests = window.sessionStorage.getItem(GITHUB_PULL_REQUESTS_CACHE_KEY)
+    if (!cachedPullRequests) {
+      return undefined
+    }
+
+    const parsedPullRequests = JSON.parse(cachedPullRequests)
+    if (Date.now() - parsedPullRequests.cachedAt > GITHUB_PULL_REQUESTS_CACHE_MAX_AGE_MS) {
+      return undefined
+    }
+
+    return parsedPullRequests.data
+  } catch {
+    return undefined
+  }
+}
+
+function cacheGithubPullRequests(data) {
+  if (typeof window === 'undefined') {
+    return
+  }
+
+  try {
+    window.sessionStorage.setItem(
+      GITHUB_PULL_REQUESTS_CACHE_KEY,
+      JSON.stringify({ cachedAt: Date.now(), data }),
+    )
+  } catch {
+    // Pull request cards are still usable without session storage.
+  }
+}
+
+function createGithubPullRequestSearchQuery() {
+  return `is:pr author:${personalDetails.githubUsername} -user:${personalDetails.githubUsername}`
+}
+
+function createGithubPullRequestSearchUrl() {
+  return `https://github.com/search?q=${encodeURIComponent(
+    createGithubPullRequestSearchQuery(),
+  )}&type=pullrequests`
+}
+
+function parseGithubRepositoryName(item) {
+  const apiPrefix = 'https://api.github.com/repos/'
+  if (item.repository_url?.startsWith(apiPrefix)) {
+    return item.repository_url.slice(apiPrefix.length)
+  }
+
+  const repositoryUrlMatch = item.html_url?.match(/github\.com\/([^/]+\/[^/]+)\/pull\//)
+  return repositoryUrlMatch?.[1] ?? 'Unknown repository'
+}
+
+function getGithubRepositoryUrl(fullName) {
+  return fullName.includes('/') ? `https://github.com/${fullName}` : personalDetails.github
+}
+
+function getGithubPullRequestStatus(item) {
+  if (item.pull_request?.merged_at) {
+    return { key: 'merged', label: 'Merged' }
+  }
+
+  if (item.state === 'open') {
+    return { key: 'open', label: 'Open' }
+  }
+
+  return { key: 'closed', label: 'Closed' }
+}
+
+function formatGithubDate(value) {
+  if (!value) {
+    return 'Unknown'
+  }
+
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) {
+    return 'Unknown'
+  }
+
+  return new Intl.DateTimeFormat('en', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+  }).format(date)
+}
+
+function groupGithubPullRequestsByRepository(items, totalCount) {
+  const repositoriesByName = new Map()
+
+  items.forEach((item) => {
+    const repoFullName = parseGithubRepositoryName(item)
+    const [owner = '', repoName = repoFullName] = repoFullName.split('/')
+    const status = getGithubPullRequestStatus(item)
+    const pullRequest = {
+      id: item.id,
+      title: item.title,
+      number: item.number,
+      url: item.html_url,
+      repoFullName,
+      statusKey: status.key,
+      statusLabel: status.label,
+      createdAt: item.created_at,
+      updatedAt: item.updated_at,
+      labels: Array.isArray(item.labels)
+        ? item.labels.map((label) => label.name).filter(Boolean).slice(0, 3)
+        : [],
+    }
+
+    const existingRepository = repositoriesByName.get(repoFullName)
+    const repository = existingRepository ?? {
+      fullName: repoFullName,
+      owner,
+      name: repoName,
+      url: getGithubRepositoryUrl(repoFullName),
+      pullRequests: [],
+      openCount: 0,
+      mergedCount: 0,
+      closedCount: 0,
+      latestUpdatedAt: pullRequest.updatedAt,
+    }
+
+    repository.pullRequests.push(pullRequest)
+    repository.openCount += status.key === 'open' ? 1 : 0
+    repository.mergedCount += status.key === 'merged' ? 1 : 0
+    repository.closedCount += status.key === 'closed' ? 1 : 0
+
+    if (
+      !repository.latestUpdatedAt ||
+      new Date(pullRequest.updatedAt).getTime() > new Date(repository.latestUpdatedAt).getTime()
+    ) {
+      repository.latestUpdatedAt = pullRequest.updatedAt
+    }
+
+    repositoriesByName.set(repoFullName, repository)
+  })
+
+  const repositories = Array.from(repositoriesByName.values())
+    .map((repository) => ({
+      ...repository,
+      pullRequests: repository.pullRequests.sort(
+        (first, second) => new Date(second.updatedAt).getTime() - new Date(first.updatedAt).getTime(),
+      ),
+    }))
+    .sort(
+      (first, second) =>
+        new Date(second.latestUpdatedAt).getTime() - new Date(first.latestUpdatedAt).getTime(),
+    )
+
+  return {
+    repositories,
+    totalCount,
+    fetchedCount: items.length,
+    updatedAt: new Date().toISOString(),
+  }
+}
+
+async function fetchGithubPullRequests(signal) {
+  const headers = {
+    Accept: 'application/vnd.github+json',
+  }
+  const items = []
+  let totalCount = 0
+
+  for (let page = 1; page <= GITHUB_PULL_REQUESTS_MAX_PAGES; page += 1) {
+    const response = await fetch(
+      `https://api.github.com/search/issues?q=${encodeURIComponent(
+        createGithubPullRequestSearchQuery(),
+      )}&sort=updated&order=desc&per_page=${GITHUB_PULL_REQUESTS_PER_PAGE}&page=${page}`,
+      { headers, signal },
+    )
+
+    if (!response.ok) {
+      throw new Error('GitHub pull request request failed')
+    }
+
+    const data = await response.json()
+    const pageItems = Array.isArray(data.items) ? data.items : []
+    totalCount = Number(data.total_count) || pageItems.length
+    items.push(...pageItems)
+
+    if (pageItems.length < GITHUB_PULL_REQUESTS_PER_PAGE || items.length >= totalCount) {
+      break
+    }
+  }
+
+  const groupedPullRequests = groupGithubPullRequestsByRepository(items, totalCount)
+  cacheGithubPullRequests(groupedPullRequests)
+  return groupedPullRequests
+}
+
+function useGithubPullRequests() {
+  const [state, setState] = useState(() => {
+    const cachedPullRequests = getCachedGithubPullRequests()
+    return {
+      data: cachedPullRequests ?? defaultGithubPullRequestData,
+      status: cachedPullRequests ? 'ready' : 'loading',
+    }
+  })
+
+  useEffect(() => {
+    const controller = new AbortController()
+
+    fetchGithubPullRequests(controller.signal)
+      .then((nextData) => {
+        setState({ data: nextData, status: 'ready' })
+      })
+      .catch((error) => {
+        if (error.name === 'AbortError') {
+          return
+        }
+        setState((currentState) => ({
+          ...currentState,
+          status: currentState.data.repositories.length > 0 ? 'ready' : 'error',
+        }))
+      })
+
+    return () => controller.abort()
+  }, [])
+
+  return state
+}
+
 function StartupLoader({ isDark, onComplete }) {
   const loaderName = 'ARUSH_KHASRU'
   const [typedName, setTypedName] = useState('')
   const [lineProgress, setLineProgress] = useState(0)
+  const [phase, setPhase] = useState('typing') // 'typing', 'holding', 'deleting', 'progressing', 'completing'
   const hasCompletedRef = useRef(false)
-  const TYPE_DELAY_MS = 175
-  const LINE_PROGRESS_DELAY_MS = 60
+
+  const TYPE_DELAY_MS = 140
+  const HOLD_DELAY_MS = 600
+  const DELETE_DELAY_MS = 80
+  const LINE_PROGRESS_DELAY_MS = 30
   const FINAL_HOLD_MS = 50
 
   useEffect(() => {
     let timer = undefined
 
-    if (typedName.length < loaderName.length) {
+    if (phase === 'typing') {
+      if (typedName.length < loaderName.length) {
+        timer = window.setTimeout(() => {
+          setTypedName(loaderName.slice(0, typedName.length + 1))
+        }, TYPE_DELAY_MS)
+      } else {
+        setPhase('holding')
+      }
+    } else if (phase === 'holding') {
       timer = window.setTimeout(() => {
-        setTypedName(loaderName.slice(0, typedName.length + 1))
-      }, TYPE_DELAY_MS)
-    } else if (lineProgress < 100) {
-      timer = window.setTimeout(() => {
-        setLineProgress((current) => Math.min(current + 8, 100))
-      }, LINE_PROGRESS_DELAY_MS)
-    } else if (!hasCompletedRef.current) {
-      hasCompletedRef.current = true
-      timer = window.setTimeout(() => {
-        onComplete()
-      }, FINAL_HOLD_MS)
+        setPhase('deleting')
+      }, HOLD_DELAY_MS)
+    } else if (phase === 'deleting') {
+      if (typedName.length > 0) {
+        timer = window.setTimeout(() => {
+          setTypedName(typedName.slice(1))
+        }, DELETE_DELAY_MS)
+      } else {
+        setPhase('progressing')
+      }
+    } else if (phase === 'progressing') {
+      if (lineProgress < 100) {
+        timer = window.setTimeout(() => {
+          setLineProgress((current) => Math.min(current + 8, 100))
+        }, LINE_PROGRESS_DELAY_MS)
+      } else {
+        setPhase('completing')
+      }
+    } else if (phase === 'completing') {
+      if (!hasCompletedRef.current) {
+        hasCompletedRef.current = true
+        timer = window.setTimeout(() => {
+          onComplete()
+        }, FINAL_HOLD_MS)
+      }
     }
 
     return () => window.clearTimeout(timer)
-  }, [typedName, lineProgress, onComplete, loaderName.length])
+  }, [phase, typedName, lineProgress, onComplete, loaderName])
 
   return (
     <section
@@ -222,8 +497,13 @@ function StartupLoader({ isDark, onComplete }) {
     >
       <div className="startup-loader__content">
         <p className="startup-loader__name">
+          {phase === 'deleting' && (
+            <span aria-hidden="true" className="startup-loader__caret">
+              _
+            </span>
+          )}
           <span className="startup-loader__typed">{typedName}</span>
-          {typedName.length < loaderName.length && (
+          {phase === 'typing' && typedName.length < loaderName.length && (
             <span aria-hidden="true" className="startup-loader__caret">
               _
             </span>
@@ -286,6 +566,13 @@ function ContactBrandIcon({ brand, className = 'h-[18px] w-[18px]' }) {
 
 function TerminalPanel({ onNavigate, activePath, isDark }) {
   const routeNames = navLinks.map((item) => (item.href === '/' ? 'about' : item.href.replace('/', '')))
+  const routeAliases = {
+    source: 'open-source',
+    pr: 'open-source',
+    prs: 'open-source',
+    'open-prs': 'open-source',
+    'pull-requests': 'open-source',
+  }
   const activeRoute = activePath === '/' ? 'about' : activePath.replace('/', '')
   const promptPrefix = `arush@portfolio:${activeRoute}`
   const scrollRef = useRef(null)
@@ -348,6 +635,7 @@ whoami                       - about current user
 pwd                          - print current route
 ls portfolio/                - list sections
 open [section]               - navigate to a section
+open source                  - open live PR route
 contact [links]              - open contact links
 portfolio --status           - show terminal status
 clear                        - clear the terminal
@@ -388,12 +676,12 @@ Location: India`,
     }
 
     if (normalized === 'ls portfolio' || normalized === 'ls portfolio/') {
-      appendOutput('about projects skills education')
+      appendOutput('about projects open-source skills education')
       return
     }
 
     if (normalized.startsWith('open ')) {
-      const target = normalized.replace('open ', '').trim()
+      const target = routeAliases[normalized.replace('open ', '').trim()] ?? normalized.replace('open ', '').trim()
       if (routeNames.includes(target)) {
         const routePath = target === 'about' ? '/' : `/${target}`
         onNavigate(routePath)
@@ -522,9 +810,8 @@ Location: India`,
                       </a>
                     ) : (
                       <span
-                        className={`whitespace-pre-wrap ${
-                          entry.tone === 'error' ? 'terminal-output-error' : 'terminal-output'
-                        }`}
+                        className={`whitespace-pre-wrap ${entry.tone === 'error' ? 'terminal-output-error' : 'terminal-output'
+                          }`}
                       >
                         {entry.text}
                       </span>
@@ -538,14 +825,14 @@ Location: India`,
             <span className="terminal-prompt">{promptPrefix}$</span>
             <div className="relative flex-1">
               <input
-              ref={inputRef}
-              value={input}
-              onChange={(event) => setInput(event.target.value)}
-              onKeyDown={handleKeyDown}
-              className="terminal-input w-full bg-transparent text-on-surface placeholder:text-on-surface-variant/60 outline-none"
-              autoComplete="off"
-              spellCheck={false}
-            />
+                ref={inputRef}
+                value={input}
+                onChange={(event) => setInput(event.target.value)}
+                onKeyDown={handleKeyDown}
+                className="terminal-input w-full bg-transparent text-on-surface placeholder:text-on-surface-variant/60 outline-none"
+                autoComplete="off"
+                spellCheck={false}
+              />
               {isDark && input === '' && (
                 <span className="absolute left-0 top-1/2 h-4 w-2 -translate-y-1/2 animate-[loader-caret-blink_1s_infinite] bg-primary/60"></span>
               )}
@@ -583,7 +870,7 @@ function AboutRoute({ onNavigate, activePath, isDark }) {
             download
             className="action-btn action-btn-primary"
           >
-            <span className="material-symbols-outlined text-base" aria-hidden="true">
+            <span className="material-symbols-outlined action-btn__icon text-base" aria-hidden="true">
               download
             </span>
             Download CV
@@ -653,6 +940,238 @@ function ProjectsRoute() {
           </div>
         ))}
       </div>
+    </section>
+  )
+}
+
+function OpenPullRequestsSkeleton() {
+  return (
+    <div className="open-pr-repo-grid" aria-hidden="true">
+      {[0, 1, 2].map((item) => (
+        <div key={item} className="pr-repo-card pr-repo-card--skeleton">
+          <span className="pr-skeleton-line pr-skeleton-line--short"></span>
+          <span className="pr-skeleton-line"></span>
+          <span className="pr-skeleton-line pr-skeleton-line--medium"></span>
+        </div>
+      ))}
+    </div>
+  )
+}
+
+function OpenPullRequestsRoute() {
+  const { data, status } = useGithubPullRequests()
+  const { repositories, totalCount, fetchedCount } = data
+  const [selectedRepositoryName, setSelectedRepositoryName] = useState('')
+  const selectedRepository = repositories.find(
+    (repository) => repository.fullName === selectedRepositoryName,
+  )
+  const hasRepositories = repositories.length > 0
+  const isInitialLoading = status === 'loading' && !hasRepositories
+  const statusLabel =
+    status === 'error'
+      ? 'GitHub unavailable'
+      : 'Live from GitHub'
+
+  useEffect(() => {
+    if (!selectedRepository) {
+      return undefined
+    }
+
+    const previousOverflow = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+
+    const handleKeyDown = (event) => {
+      if (event.key === 'Escape') {
+        setSelectedRepositoryName('')
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+
+    return () => {
+      document.body.style.overflow = previousOverflow
+      window.removeEventListener('keydown', handleKeyDown)
+    }
+  }, [selectedRepository])
+
+  return (
+    <section className="open-pr-route space-y-6">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+        <div className="space-y-2">
+          <p className="font-code-md text-xs uppercase text-primary">Live GitHub feed</p>
+          <h2 className="flex items-center gap-2 font-headline-md text-headline-md text-on-surface">
+            <span className="material-symbols-outlined text-primary" aria-hidden="true">
+              account_tree
+            </span>
+            Open Source PRs
+          </h2>
+          <p className="text-body-md text-on-surface-variant">
+            Pull requests authored by {personalDetails.githubUsername}, grouped by repository.
+          </p>
+        </div>
+        <a
+          href={createGithubPullRequestSearchUrl()}
+          target="_blank"
+          rel="noreferrer"
+          className="action-btn action-btn-ghost self-start sm:self-auto"
+        >
+          <ContactBrandIcon brand="github" className="h-[16px] w-[16px]" />
+          GitHub Search
+        </a>
+      </div>
+
+      <div className="open-pr-summary" aria-live="polite">
+        <span className="open-pr-summary__status">{statusLabel}</span>
+        <span>{formatGithubCount(fetchedCount)} PRs loaded</span>
+        {totalCount > fetchedCount && <span>{formatGithubCount(totalCount)} available</span>}
+      </div>
+
+      {status === 'error' && (
+        <div className="open-pr-message" role="status">
+          GitHub could not be reached right now. Try again after the API rate limit resets.
+        </div>
+      )}
+
+      {isInitialLoading && <OpenPullRequestsSkeleton />}
+
+      {hasRepositories && (
+        <div className="open-pr-repo-grid">
+          {repositories.map((repository) => {
+            const isSelected = selectedRepositoryName === repository.fullName
+
+            return (
+              <button
+                key={repository.fullName}
+                type="button"
+                className={`pr-repo-card lift-on-hover ${isSelected ? 'pr-repo-card--active' : ''}`}
+                aria-expanded={isSelected}
+                onClick={() => setSelectedRepositoryName(repository.fullName)}
+              >
+                <span className="pr-repo-card__header">
+                  <span className="pr-repo-card__icon" aria-hidden="true">
+                    <ContactBrandIcon brand="github" className="h-[17px] w-[17px]" />
+                  </span>
+                  <span className="pr-repo-card__repo">
+                    <span className="pr-repo-card__owner">{repository.owner}</span>
+                    <span className="pr-repo-card__name">{repository.name}</span>
+                  </span>
+                </span>
+                <span className="pr-repo-card__count">
+                  {formatGithubCount(repository.pullRequests.length)} PRs
+                </span>
+                <span className="pr-repo-card__stats">
+                  <span>{repository.openCount} open</span>
+                  <span>{repository.mergedCount} merged</span>
+                  <span>{repository.closedCount} closed</span>
+                </span>
+                <span className="pr-repo-card__updated">
+                  Updated {formatGithubDate(repository.latestUpdatedAt)}
+                </span>
+              </button>
+            )
+          })}
+        </div>
+      )}
+
+      {hasRepositories && !selectedRepository && (
+        <div className="open-pr-message open-pr-message--glass">
+          Select a repository card to reveal its pull requests.
+        </div>
+      )}
+
+      {selectedRepository && (
+        <div
+          className="repo-pr-modal"
+          role="presentation"
+          onMouseDown={(event) => {
+            if (event.target === event.currentTarget) {
+              setSelectedRepositoryName('')
+            }
+          }}
+        >
+          <section
+            className="repo-pr-panel"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="repo-pr-panel-title"
+          >
+            <div className="repo-pr-panel__header">
+              <div className="min-w-0">
+                <p className="repo-pr-panel__eyebrow">Repository</p>
+                <h3 id="repo-pr-panel-title">{selectedRepository.fullName}</h3>
+              </div>
+              <div className="repo-pr-panel__actions">
+                <a
+                  href={selectedRepository.url}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="interactive-press repo-pr-panel__link"
+                >
+                  Open repo
+                  <span className="material-symbols-outlined text-base" aria-hidden="true">
+                    arrow_outward
+                  </span>
+                </a>
+                <button
+                  type="button"
+                  className="interactive-press repo-pr-panel__close"
+                  aria-label="Close pull request panel"
+                  onClick={() => setSelectedRepositoryName('')}
+                >
+                  <span className="material-symbols-outlined text-base" aria-hidden="true">
+                    close
+                  </span>
+                </button>
+              </div>
+            </div>
+
+            <div className="repo-pr-list">
+              {selectedRepository.pullRequests.map((pullRequest) => (
+                <article key={pullRequest.id} className="pr-card">
+                  <div className="pr-card__heading">
+                    <div className="min-w-0">
+                      <p className="pr-card__repo">{pullRequest.repoFullName}</p>
+                      <h4>{pullRequest.title}</h4>
+                    </div>
+                    <span className={`pr-status pr-status--${pullRequest.statusKey}`}>
+                      {pullRequest.statusLabel}
+                    </span>
+                  </div>
+                  <div className="pr-card__meta">
+                    <span>#{pullRequest.number}</span>
+                    <span>Created {formatGithubDate(pullRequest.createdAt)}</span>
+                    <span>Updated {formatGithubDate(pullRequest.updatedAt)}</span>
+                  </div>
+                  {pullRequest.labels.length > 0 && (
+                    <div className="pr-card__labels" aria-label="Pull request labels">
+                      {pullRequest.labels.map((label) => (
+                        <span key={label}>{label}</span>
+                      ))}
+                    </div>
+                  )}
+                  <a
+                    href={pullRequest.url}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="interactive-press pr-card__link"
+                  >
+                    View PR
+                    <span className="material-symbols-outlined text-base" aria-hidden="true">
+                      arrow_outward
+                    </span>
+                  </a>
+                </article>
+              ))}
+            </div>
+          </section>
+        </div>
+      )}
+
+      {!isInitialLoading && !hasRepositories && status !== 'error' && (
+        <div className="open-pr-message open-pr-message--glass">
+          No open-source pull requests were found for this GitHub profile.
+        </div>
+      )}
     </section>
   )
 }
@@ -790,7 +1309,7 @@ function App() {
 
   return (
     <div className={`app-shell flex min-h-screen flex-col bg-background text-on-background selection:bg-primary selection:text-on-primary ${isDark ? 'cyber-grid' : 'dot-grid-light'}`}>
-
+      <DecorativeVines />
       {isDark && <div className="cyber-scanline" aria-hidden="true" />}
       <header className="site-header full-width">
         <nav
@@ -801,9 +1320,8 @@ function App() {
             <AKLogo onOpenAbout={() => navigate('/')} isDark={isDark} />
             <div className="min-w-0">
               <p
-                className={`brand-name font-bold ${
-                  isDark ? 'text-[#e5e7eb]' : 'text-slate-800'
-                }`}
+                className={`brand-name font-bold ${isDark ? 'text-[#e5e7eb]' : 'text-slate-800'
+                  }`}
               >
                 Arush Khasru
               </p>
@@ -820,21 +1338,19 @@ function App() {
                       }}
                       aria-current={isActive ? 'page' : undefined}
                       data-active={isActive}
-                      className={`route-link transition-colors ${
-                        isDark
+                      className={`route-link transition-colors ${isDark
                           ? isActive
                             ? 'text-[#86efac]'
                             : 'text-[#4ade80] hover:text-[#86efac]'
                           : isActive
                             ? 'text-emerald-700'
                             : 'text-emerald-600 hover:text-emerald-700'
-                      } ${
-                        index !== navLinks.length - 1
+                        } ${index !== navLinks.length - 1
                           ? isDark
                             ? 'mr-3 border-r border-[#22c55e]/50 pr-3'
                             : 'mr-3 border-r border-emerald-500/50 pr-3'
                           : ''
-                      }`}
+                        }`}
                     >
                       {link.label}
                     </a>
@@ -851,11 +1367,10 @@ function App() {
                   href={contact.href}
                   target={contact.key === 'email' ? undefined : '_blank'}
                   rel={contact.key === 'email' ? undefined : 'noreferrer'}
-                  className={`contact-chip inline-flex items-center rounded-full p-2 text-sm ${
-                    isDark
+                  className={`contact-chip inline-flex items-center rounded-full p-2 text-sm ${isDark
                       ? 'text-slate-300 hover:bg-[#363a38] hover:text-[#f8fafc]'
                       : 'text-slate-700 hover:bg-slate-200 hover:text-slate-900'
-                  }`}
+                    }`}
                   title={`${contact.label}: ${contact.display}`}
                   aria-label={`${contact.label}: ${contact.display}`}
                 >
@@ -865,20 +1380,18 @@ function App() {
             </div>
             <button
               type="button"
-              className={`theme-toggle rounded-full p-2 transition-all ${
-                isDark
+              className={`theme-toggle rounded-full p-2 transition-all ${isDark
                   ? 'text-slate-300 hover:bg-[#363a38] hover:text-[#f8fafc]'
                   : 'text-slate-700 hover:bg-slate-200 hover:text-slate-900'
-              }`}
+                }`}
               aria-label="Toggle theme"
               aria-pressed={isDark}
               title={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
               onClick={() => setIsDark((previous) => !previous)}
             >
               <span
-                className={`material-symbols-outlined transition-transform duration-300 ${
-                  isDark ? 'rotate-0' : 'rotate-180'
-                }`}
+                className={`material-symbols-outlined transition-transform duration-300 ${isDark ? 'rotate-0' : 'rotate-180'
+                  }`}
                 aria-hidden="true"
               >
                 {isDark ? 'light_mode' : 'dark_mode'}
@@ -886,7 +1399,7 @@ function App() {
             </button>
           </div>
         </nav>
-        <div className="mobile-nav mx-auto grid max-w-[960px] grid-cols-4 items-center px-5 pb-3 text-center text-[12px] font-semibold md:hidden">
+        <div className="mobile-nav mx-auto grid max-w-[960px] grid-cols-5 items-center px-5 pb-3 text-center text-[12px] font-semibold md:hidden">
           {navLinks.map((link, index) => {
             const isActive = currentPath === link.href
             return (
@@ -899,21 +1412,19 @@ function App() {
                 }}
                 aria-current={isActive ? 'page' : undefined}
                 data-active={isActive}
-                className={`route-link transition-colors ${
-                  isDark
+                className={`route-link transition-colors ${isDark
                     ? isActive
                       ? 'text-[#86efac]'
                       : 'text-[#4ade80] hover:text-[#86efac]'
                     : isActive
                       ? 'text-emerald-700'
                       : 'text-emerald-600 hover:text-emerald-700'
-                } ${
-                  index !== navLinks.length - 1
+                  } ${index !== navLinks.length - 1
                     ? isDark
                       ? 'border-r border-[#22c55e]/40'
                       : 'border-r border-emerald-500/40'
                     : ''
-                }`}
+                  }`}
               >
                 {link.label}
               </a>
@@ -928,6 +1439,7 @@ function App() {
             <AboutRoute onNavigate={navigate} activePath={currentPath} isDark={isDark} />
           )}
           {currentPath === '/projects' && <ProjectsRoute />}
+          {currentPath === '/open-source' && <OpenPullRequestsRoute />}
           {currentPath === '/skills' && <SkillsRoute />}
           {currentPath === '/education' && <EducationRoute />}
         </div>
@@ -935,9 +1447,8 @@ function App() {
 
       <footer className="site-footer full-width">
         <div
-          className={`site-footer__content mx-auto flex max-w-[960px] items-center justify-center gap-3 px-5 py-3 font-mono text-xs uppercase md:max-w-[800px] md:px-6 md:py-4 md:text-center md:tracking-widest ${
-            isDark ? 'text-[#4ade80]' : 'text-emerald-700'
-          }`}
+          className={`site-footer__content mx-auto flex max-w-[960px] items-center justify-center gap-3 px-5 py-3 font-mono text-xs uppercase md:max-w-[800px] md:px-6 md:py-4 md:text-center md:tracking-widest ${isDark ? 'text-[#4ade80]' : 'text-emerald-700'
+            }`}
         >
           <span className="footer-copy">© arushkhasru.me · 2026</span>
           <div className="flex items-center gap-1 md:hidden" aria-label="Contact links">
@@ -960,6 +1471,8 @@ function App() {
     </div>
   )
 }
+
+
 
 export default App
 
