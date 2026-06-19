@@ -27,7 +27,7 @@
           } else {
             if (currentText.length > 0) {
               currentText = currentText.slice(1)
-              document.title = currentText || ' '
+              document.title = currentText || '\u200B'
               setTimeout(tick, 100)
             } else {
               isDeleting = false
