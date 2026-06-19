@@ -301,7 +301,13 @@ function formatGithubDate(value) {
 function groupGithubPullRequestsByRepository(items, totalCount) {
   const repositoriesByName = new Map()
 
-  items.forEach((item) => {
+  const filteredItems = items.filter((item) => {
+    const repoFullName = parseGithubRepositoryName(item)
+    const [, repoName = repoFullName] = repoFullName.split('/')
+    return repoName !== 'cuhp-devs' && repoName !== 'agency-ai'
+  })
+
+  filteredItems.forEach((item) => {
     const repoFullName = parseGithubRepositoryName(item)
     const [owner = '', repoName = repoFullName] = repoFullName.split('/')
     const status = getGithubPullRequestStatus(item)
@@ -363,7 +369,7 @@ function groupGithubPullRequestsByRepository(items, totalCount) {
   return {
     repositories,
     totalCount,
-    fetchedCount: items.length,
+    fetchedCount: filteredItems.length,
     updatedAt: new Date().toISOString(),
   }
 }
@@ -438,12 +444,11 @@ function StartupLoader({ isDark, onComplete }) {
   const loaderName = 'ARUSH_KHASRU'
   const [typedName, setTypedName] = useState('')
   const [lineProgress, setLineProgress] = useState(0)
-  const [phase, setPhase] = useState('typing') // 'typing', 'holding', 'deleting', 'progressing', 'completing'
+  const [phase, setPhase] = useState('typing') // 'typing', 'holding', 'progressing', 'completing'
   const hasCompletedRef = useRef(false)
 
   const TYPE_DELAY_MS = 140
   const HOLD_DELAY_MS = 600
-  const DELETE_DELAY_MS = 80
   const LINE_PROGRESS_DELAY_MS = 30
   const FINAL_HOLD_MS = 50
 
@@ -460,16 +465,8 @@ function StartupLoader({ isDark, onComplete }) {
       }
     } else if (phase === 'holding') {
       timer = window.setTimeout(() => {
-        setPhase('deleting')
-      }, HOLD_DELAY_MS)
-    } else if (phase === 'deleting') {
-      if (typedName.length > 0) {
-        timer = window.setTimeout(() => {
-          setTypedName(typedName.slice(1))
-        }, DELETE_DELAY_MS)
-      } else {
         setPhase('progressing')
-      }
+      }, HOLD_DELAY_MS)
     } else if (phase === 'progressing') {
       if (lineProgress < 100) {
         timer = window.setTimeout(() => {
@@ -497,11 +494,6 @@ function StartupLoader({ isDark, onComplete }) {
     >
       <div className="startup-loader__content">
         <p className="startup-loader__name">
-          {phase === 'deleting' && (
-            <span aria-hidden="true" className="startup-loader__caret">
-              _
-            </span>
-          )}
           <span className="startup-loader__typed">{typedName}</span>
           {phase === 'typing' && typedName.length < loaderName.length && (
             <span aria-hidden="true" className="startup-loader__caret">
@@ -1048,9 +1040,20 @@ function OpenPullRequestsRoute() {
                 onClick={() => setSelectedRepositoryName(repository.fullName)}
               >
                 <span className="pr-repo-card__header">
-                  <span className="pr-repo-card__icon" aria-hidden="true">
-                    <ContactBrandIcon brand="github" className="h-[17px] w-[17px]" />
-                  </span>
+                  <div className="relative flex-shrink-0">
+                    <span className="pr-repo-card__icon relative overflow-hidden" aria-hidden="true">
+                      <ContactBrandIcon brand="github" className="absolute h-[17px] w-[17px] z-0 opacity-40" />
+                      <img 
+                        src={`https://github.com/${repository.owner}.png?size=40`} 
+                        alt="" 
+                        className="absolute inset-0 h-full w-full object-cover z-10"
+                        onError={(e) => { e.target.style.display = 'none'; }}
+                      />
+                    </span>
+                    <span className="absolute -bottom-1 -right-1 flex h-[16px] w-[16px] items-center justify-center rounded-full bg-surface-container-lowest text-primary border border-white/10" aria-hidden="true">
+                      <ContactBrandIcon brand="github" className="h-[10px] w-[10px]" />
+                    </span>
+                  </div>
                   <span className="pr-repo-card__repo">
                     <span className="pr-repo-card__owner">{repository.owner}</span>
                     <span className="pr-repo-card__name">{repository.name}</span>
