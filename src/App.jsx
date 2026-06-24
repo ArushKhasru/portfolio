@@ -150,7 +150,7 @@ const skillGroups = [
   },
   {
     title: 'Core Concepts',
-    values: ['REST APIs', 'JWT Authentication', 'Real-Time Systems', 'OOP', 'DSA'],
+    values: ['REST APIs', 'JWT Authentication', 'OOP', 'DSA'],
   },
 ]
 
@@ -641,7 +641,7 @@ Down Arrow                   - next command`,
       appendOutput(
         `Arush Khasru
 Role: Full-stack developer (MERN, Next.js, FastAPI)
-Focus: Real-time systems, AI applications, and developer tools
+Focus: AI applications, and developer tools
 Education: Final-year MCA | UGC NET (Computer Science), Dec 2025
 Location: India`,
       )
@@ -853,8 +853,7 @@ function AboutRoute({ onNavigate, activePath, isDark }) {
           )}
         </div>
         <p className="font-code-md text-body-lg text-on-surface-variant">
-          Full-stack developer building real-time applications, interactive AI assistants,
-          and developer tools using Next.js, FastAPI, Node.js, and Socket.IO.
+          Full-stack developer skilled in React, Next.js, Node.js, Express, MongoDB, REST APIs, and Tailwind CSS. I build responsive websites, dashboards, and full-stack web apps with clean UI and reliable backend functionality.
         </p>
         <div className="flex flex-wrap gap-3">
           <a
