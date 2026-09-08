@@ -857,7 +857,7 @@ function AboutRoute({ onNavigate, activePath, isDark }) {
         </p>
         <div className="flex flex-wrap gap-3">
           <a
-            href="/Arush_CV2.pdf"
+            href="/Arush_CV.pdf"
             download
             className="action-btn action-btn-primary"
           >
