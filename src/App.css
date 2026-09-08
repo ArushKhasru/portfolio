@@ -28,7 +28,7 @@
 
 .startup-loader--dark {
   color: #ffffff;
-  background-color: oklch(23.64% 0.0045 248);
+  background-color: #030405;
   background-image: none;
 }
 
@@ -99,7 +99,7 @@
 }
 
 :root[data-theme='dark'] .bg-background {
-  background-color: oklch(23.64% 0.0045 248) !important;
+  background-color: #030405 !important;
   background-image: none;
 }
 
@@ -183,11 +183,51 @@
   animation: neon-flicker 4s linear infinite;
 }
 
-.cyber-grid {
-  background-size: 56px 56px;
-  background-image: 
-    linear-gradient(to right, rgba(34, 197, 94, 0.028) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(34, 197, 94, 0.028) 1px, transparent 1px);
+.night-sky {
+  position: relative;
+  isolation: isolate;
+}
+
+.starfield {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.starfield__drift {
+  position: absolute;
+  inset: -36px;
+  background:
+    radial-gradient(ellipse at 82% 16%, rgb(117 153 198 / 0.075), transparent 48%),
+    radial-gradient(ellipse at 12% 78%, rgb(117 153 198 / 0.045), transparent 42%);
+}
+
+.starfield__sky {
+  display: block;
+  width: 100%;
+  height: 100%;
+  mask-image: radial-gradient(ellipse at center, rgb(0 0 0 / 0.25), rgb(0 0 0 / 0.45) 45%, #000 80%);
+}
+
+.starfield__twinkle {
+  animation: starlight-breathe 5s ease-in-out infinite alternate;
+}
+
+.starfield[data-paused='true'] .starfield__twinkle {
+  animation-play-state: paused;
+}
+
+@keyframes starlight-breathe {
+  from { opacity: 0.15; }
+  to { opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .starfield__twinkle {
+    animation: none;
+  }
 }
 
 .dot-grid-light {
@@ -807,19 +847,39 @@
 }
 
 .site-header {
+  --header-surface: 3 4 5;
+  --header-opacity: 0.76;
+  --header-rule: rgb(219 231 247 / 0.1);
   position: fixed;
   top: 0;
   right: 0;
   left: 0;
   z-index: 40;
-}
-
-:root[data-theme='dark'] .site-header {
-  background: oklch(23.64% 0.0045 248);
+  /* The denser fallback keeps text legible without backdrop-filter support. */
+  background: rgb(var(--header-surface) / 0.96);
+  border-bottom: 1px solid var(--header-rule);
 }
 
 :root[data-theme='light'] .site-header {
-  background: #f8fafc;
+  --header-surface: 248 250 252;
+  --header-opacity: 0.84;
+  --header-rule: rgb(15 23 42 / 0.12);
+}
+
+@supports ((backdrop-filter: blur(16px)) or (-webkit-backdrop-filter: blur(16px))) {
+  .site-header {
+    background: rgb(var(--header-surface) / var(--header-opacity));
+    -webkit-backdrop-filter: blur(16px);
+    backdrop-filter: blur(16px);
+  }
+}
+
+@media (prefers-reduced-transparency: reduce), (prefers-contrast: more) {
+  .site-header {
+    background: rgb(var(--header-surface));
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
 }
 
 .site-footer {
@@ -829,6 +889,42 @@
 .site-main {
   padding-top: 138px;
   padding-bottom: 36px;
+}
+
+.desktop-nav {
+  flex-wrap: wrap;
+  row-gap: 8px;
+}
+
+.mobile-nav {
+  overflow-x: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--focus-ring) transparent;
+}
+
+.mobile-nav .route-link {
+  flex: 1 0 auto;
+  white-space: nowrap;
+}
+
+.experience-entry {
+  border-radius: 8px;
+}
+
+.experience-date {
+  font-variant-numeric: tabular-nums;
+}
+
+.experience-responsibilities {
+  display: grid;
+  gap: 16px;
+  padding-left: 1.25rem;
+  list-style: disc;
+  line-height: 1.7;
+}
+
+.experience-responsibilities li {
+  padding-left: 4px;
 }
 
 .brand-name {
@@ -1492,17 +1588,9 @@
 }
 
 @media (max-width: 767px) {
-  :root[data-theme='dark'] .site-header {
-    border-bottom: 1px solid rgb(74 222 128 / 0.14);
-  }
-
-  :root[data-theme='light'] .site-header {
-    border-bottom: 1px solid rgb(15 23 42 / 0.1);
-  }
-
   .mobile-nav .route-link {
-    padding: 5px 4px;
-    font-size: 0.66rem;
+    padding: 10px 12px;
+    font-size: 0.75rem;
   }
 
   .repo-pr-modal {
@@ -1587,141 +1675,4 @@
     opacity: 1;
     transform: none;
   }
-}
-
-/* Decorative Vines Styling */
-.decorative-vines {
-  position: fixed;
-  top: 0;
-  height: 90vh;
-  z-index: 5;
-  pointer-events: none;
-  display: none;
-  width: 120px;
-}
-
-.left-vine {
-  left: 0;
-}
-
-.right-vine {
-  right: 0;
-}
-
-@media (min-width: 1200px) {
-  .decorative-vines {
-    display: block;
-  }
-}
-
-/* Vine Elements Styling */
-.vine-stem {
-  stroke: rgba(34, 197, 94, 0.4);
-  stroke-width: 2.5px;
-  stroke-linecap: round;
-  fill: none;
-  transition: stroke 220ms ease;
-}
-
-:root[data-theme='light'] .vine-stem {
-  stroke: rgba(4, 120, 87, 0.35);
-}
-
-.decorative-leaf {
-  stroke: rgba(74, 222, 128, 0.6);
-  stroke-width: 1.2px;
-  transition: stroke 220ms ease, fill 220ms ease;
-}
-
-:root[data-theme='light'] .decorative-leaf {
-  stroke: rgba(16, 185, 129, 0.6);
-}
-
-/* Leaf Gradient Transitions (using CSS stop-color transitions) */
-.leaf-grad-start {
-  stop-color: rgba(34, 197, 94, 0.35);
-  transition: stop-color 220ms ease;
-}
-
-.leaf-grad-end {
-  stop-color: rgba(74, 222, 128, 0.08);
-  transition: stop-color 220ms ease;
-}
-
-:root[data-theme='light'] .leaf-grad-start {
-  stop-color: rgba(4, 120, 87, 0.3);
-}
-
-:root[data-theme='light'] .leaf-grad-end {
-  stop-color: rgba(16, 185, 129, 0.06);
-}
-
-:root[data-theme='dark'] .decorative-leaf {
-  filter: drop-shadow(0 0 2px rgba(74, 222, 128, 0.2));
-}
-
-/* Animations */
-@keyframes sway-left {
-  0%, 100% {
-    transform: rotate(0deg);
-  }
-  50% {
-    transform: rotate(6deg);
-  }
-}
-
-@keyframes sway-right {
-  0%, 100% {
-    transform: rotate(0deg);
-  }
-  50% {
-    transform: rotate(-6deg);
-  }
-}
-
-.left-vine-container .decorative-leaf {
-  animation: sway-left 5s ease-in-out infinite;
-}
-
-.right-vine-container .decorative-leaf {
-  animation: sway-right 5.5s ease-in-out infinite;
-}
-
-/* Apply alternating delay and durations for organic feel */
-.decorative-leaf:nth-child(even) {
-  animation-duration: 6.5s;
-  animation-delay: -1.8s;
-}
-
-.decorative-leaf:nth-child(3n) {
-  animation-duration: 4.5s;
-  animation-delay: -3.2s;
-}
-
-@keyframes branch-sway-left {
-  0%, 100% {
-    transform: rotate(0deg) translate(0, 0);
-  }
-  50% {
-    transform: rotate(0.8deg) translate(2px, 1px);
-  }
-}
-
-@keyframes branch-sway-right {
-  0%, 100% {
-    transform: rotate(0deg) translate(0, 0);
-  }
-  50% {
-    transform: rotate(-0.8deg) translate(-2px, 1px);
-  }
-}
-
-.left-vine-container {
-  transform-origin: top left;
-  animation: branch-sway-left 14s ease-in-out infinite;
-}
-
-.right-vine-container {
-  transform-origin: top right;
-  animation: branch-sway-right 16s ease-in-out infinite;
 }

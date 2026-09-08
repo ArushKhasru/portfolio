@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import './App.css'
-import DecorativeVines from './assets/components/DecorativeVines'
+import Starfield from './assets/components/Starfield'
 
 const personalDetails = {
   name: 'Arush Khasru',
@@ -156,6 +156,7 @@ const skillGroups = [
 
 const navLinks = [
   { label: 'About', href: '/' },
+  { label: 'Experience', href: '/experience' },
   { label: 'Projects', href: '/projects' },
   { label: 'Open Source', href: '/open-source' },
   { label: 'Skills', href: '/skills' },
@@ -193,7 +194,7 @@ function getInitialTheme() {
     return true
   }
 
-  return window.matchMedia('(prefers-color-scheme: dark)').matches
+  return true
 }
 
 function getInitialLoaderVisibility() {
@@ -668,7 +669,7 @@ Location: India`,
     }
 
     if (normalized === 'ls portfolio' || normalized === 'ls portfolio/') {
-      appendOutput('about projects open-source skills education')
+      appendOutput(routeNames.join(' '))
       return
     }
 
@@ -871,6 +872,43 @@ function AboutRoute({ onNavigate, activePath, isDark }) {
 
       <TerminalPanel onNavigate={onNavigate} activePath={activePath} isDark={isDark} />
     </>
+  )
+}
+
+function ExperienceRoute() {
+  return (
+    <section className="experience-route space-y-6" aria-labelledby="experience-heading">
+      <h1 id="experience-heading" className="flex items-center gap-2 font-headline-md text-headline-md text-on-surface">
+        <span className="material-symbols-outlined text-primary" aria-hidden="true">work</span>
+        Experience
+      </h1>
+      <article className="experience-entry border border-white/10 p-4 sm:p-6" aria-labelledby="ai-trainer-heading">
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <h2 id="ai-trainer-heading" className="font-headline-md text-body-lg text-on-surface">AI Trainer</h2>
+            <p className="mt-1 text-body-md text-primary">Handshake AI Fellowship</p>
+          </div>
+          <p className="experience-date text-sm text-on-surface-variant">
+            <time dateTime="2026-07">Jul 2026</time> &ndash; Present
+          </p>
+        </div>
+        <p className="mt-2 text-sm text-on-surface-variant">Freelance &middot; Remote</p>
+        <ul className="experience-responsibilities mt-6 text-body-md text-on-surface-variant">
+          <li>
+            Developed and evaluated domain-specific prompts to assess reasoning, accuracy,
+            instruction following, and task performance of large language models.
+          </li>
+          <li>
+            Reviewed AI-generated responses for accuracy, relevance, clarity, reasoning quality,
+            and adherence to task requirements, providing structured feedback for model evaluation workflows.
+          </li>
+          <li>
+            Conducted independent research and fact verification to improve prompt quality and
+            support reliable LLM training and evaluation.
+          </li>
+        </ul>
+      </article>
+    </section>
   )
 }
 
@@ -1310,8 +1348,8 @@ function App() {
   }
 
   return (
-    <div className={`app-shell flex min-h-screen flex-col bg-background text-on-background selection:bg-primary selection:text-on-primary ${isDark ? 'cyber-grid' : 'dot-grid-light'}`}>
-      <DecorativeVines />
+    <div className={`app-shell flex min-h-screen flex-col bg-background text-on-background selection:bg-primary selection:text-on-primary ${isDark ? 'night-sky' : 'dot-grid-light'}`}>
+      {isDark && <Starfield />}
       {isDark && <div className="cyber-scanline" aria-hidden="true" />}
       <header className="site-header full-width">
         <nav
@@ -1327,7 +1365,7 @@ function App() {
               >
                 Arush Khasru
               </p>
-              <div className="mt-1 hidden items-center text-base font-semibold md:flex">
+              <div className="desktop-nav mt-1 hidden items-center text-base font-semibold md:flex">
                 {navLinks.map((link, index) => {
                   const isActive = currentPath === link.href
                   return (
@@ -1401,7 +1439,7 @@ function App() {
             </button>
           </div>
         </nav>
-        <div className="mobile-nav mx-auto grid max-w-[960px] grid-cols-5 items-center px-5 pb-3 text-center text-[12px] font-semibold md:hidden">
+        <nav aria-label="Mobile navigation" className="mobile-nav mx-auto flex max-w-[960px] items-center px-5 pb-3 text-center text-[12px] font-semibold md:hidden">
           {navLinks.map((link, index) => {
             const isActive = currentPath === link.href
             return (
@@ -1432,7 +1470,7 @@ function App() {
               </a>
             )
           })}
-        </div>
+        </nav>
       </header>
 
       <main id="main-content" className="site-main mx-auto w-full max-w-[840px] flex-1 px-5 sm:px-6">
@@ -1440,6 +1478,7 @@ function App() {
           {currentPath === '/' && (
             <AboutRoute onNavigate={navigate} activePath={currentPath} isDark={isDark} />
           )}
+          {currentPath === '/experience' && <ExperienceRoute />}
           {currentPath === '/projects' && <ProjectsRoute />}
           {currentPath === '/open-source' && <OpenPullRequestsRoute />}
           {currentPath === '/skills' && <SkillsRoute />}

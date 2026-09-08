@@ -47,10 +47,7 @@
       ;(() => {
         try {
           const savedTheme = window.localStorage.getItem('portfolio-theme')
-          const shouldUseDark =
-            savedTheme === 'dark' ||
-            (savedTheme !== 'light' &&
-              window.matchMedia('(prefers-color-scheme: dark)').matches)
+          const shouldUseDark = savedTheme !== 'light'
           document.documentElement.classList.toggle('dark', shouldUseDark)
           document.documentElement.dataset.theme = shouldUseDark ? 'dark' : 'light'
         } catch {
