@@ -61,7 +61,7 @@ const contactProfiles = [
 const education = [
   {
     degree: 'Master of Computer Applications (MCA)',
-    timeline: '2024 - Present',
+    timeline: '2024 - 2026',
     institute: 'Central University of Himachal Pradesh',
     notes: '',
   },
@@ -641,10 +641,10 @@ Down Arrow                   - next command`,
     if (normalized === 'whoami') {
       appendOutput(
         `Arush Khasru
-Role: Full-stack developer (MERN, Next.js, FastAPI)
-Focus: AI applications, and developer tools
-Education: Final-year MCA | UGC NET (Computer Science), Dec 2025
-Location: India`,
+Role: AI and full-stack developer
+Experience: AI Trainer at Handshake AI (Jul 2026 - Present)
+Focus: AI applications, full-stack web apps, and developer tools
+Education: MCA, 2024 - 2026 | UGC NET (Computer Science), Dec 2025`,
       )
       return
     }
@@ -771,8 +771,9 @@ Location: India`,
             <div className="h-3 w-3 rounded-full bg-[#ffbd2e]"></div>
             <div className="h-3 w-3 rounded-full bg-[#27c93f]"></div>
           </div>
-          <div className="font-code-md text-xs text-on-surface-variant/50">
-            portfolio.zsh - interactive
+          <div className="terminal-status font-code-md text-xs text-on-surface-variant" aria-hidden="true">
+            <span className="terminal-status__idle">portfolio.zsh</span>
+            <span className="terminal-status__active">Ready for a command</span>
           </div>
         </div>
         <div className="flex min-h-0 flex-1 flex-col p-4 font-code-md text-sm leading-relaxed text-primary sm:p-6">
@@ -822,6 +823,7 @@ Location: India`,
                 value={input}
                 onChange={(event) => setInput(event.target.value)}
                 onKeyDown={handleKeyDown}
+                aria-label="Terminal command"
                 className="terminal-input w-full bg-transparent text-on-surface placeholder:text-on-surface-variant/60 outline-none"
                 autoComplete="off"
                 spellCheck={false}
@@ -838,6 +840,103 @@ Location: India`,
 }
 
 function AboutRoute({ onNavigate, activePath, isDark }) {
+  const stopTerminalMotion = useRef(() => {})
+  const terminalReturnScroll = useRef(0)
+
+  useEffect(() => () => stopTerminalMotion.current(), [])
+
+  const handleTerminalToggle = (event) => {
+    event.preventDefault()
+    const summary = event.currentTarget
+    const disclosure = summary.closest('details')
+    if (!disclosure) return
+    const opening = !disclosure.open || disclosure.dataset.motion === 'closing'
+    const panel = disclosure.closest('.content-panel')
+    const reveal = disclosure.querySelector('.terminal-disclosure__reveal')
+    if (!panel || !reveal) return
+
+    // Capture the current frame before cancelling, so rapid toggles reverse
+    // smoothly instead of jumping to a fully open or closed position.
+    const wasClosed = !disclosure.open
+    const initialHeight = wasClosed ? 0 : reveal.getBoundingClientRect().height
+    const initialOpacity = wasClosed ? 0.6 : Number(getComputedStyle(reveal).opacity)
+    const initialScroll = panel.scrollTop
+    stopTerminalMotion.current()
+    if (wasClosed) terminalReturnScroll.current = initialScroll
+
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)')
+    const previousAnchor = panel.style.overflowAnchor
+    panel.style.overflowAnchor = 'none'
+    disclosure.open = true
+    disclosure.dataset.motion = opening ? 'opening' : 'closing'
+    summary.setAttribute('aria-expanded', String(opening))
+    const fullHeight = reveal.getBoundingClientRect().height
+    const destination = opening
+      ? Math.max(0, panel.scrollHeight - panel.clientHeight)
+      : Math.min(terminalReturnScroll.current, Math.max(0, panel.scrollHeight - fullHeight - panel.clientHeight))
+
+    if (reducedMotion.matches) {
+      disclosure.open = opening
+      delete disclosure.dataset.motion
+      panel.scrollTop = destination
+      panel.style.overflowAnchor = previousAnchor
+      return
+    }
+
+    const targetHeight = opening ? fullHeight : 0
+    const distance = Math.min(1, Math.abs(targetHeight - initialHeight) / Math.max(1, fullHeight))
+    const animation = reveal.animate(
+      [
+        { height: `${initialHeight}px`, opacity: initialOpacity },
+        { height: `${targetHeight}px`, opacity: opening ? 1 : 0.6 },
+      ],
+      {
+        duration: Math.max(180, (opening ? 1000 : 700) * distance),
+        easing: 'cubic-bezier(0.45, 0, 0.55, 1)',
+        fill: 'both',
+      },
+    )
+    panel.scrollTop = initialScroll
+    let frame = 0
+    let followScroll = true
+    const releaseScroll = () => { followScroll = false }
+    const handleKey = (keyEvent) => {
+      if (['ArrowUp', 'ArrowDown', 'PageUp', 'PageDown', 'Home', 'End', ' '].includes(keyEvent.key)) releaseScroll()
+    }
+    const stop = () => {
+      window.cancelAnimationFrame(frame)
+      animation.cancel()
+      panel.style.overflowAnchor = previousAnchor
+      panel.removeEventListener('wheel', releaseScroll)
+      panel.removeEventListener('touchstart', releaseScroll)
+      panel.removeEventListener('keydown', handleKey)
+      reducedMotion.removeEventListener('change', finish)
+    }
+    const finish = () => {
+      // Hide native details only after the collapse has reached zero height.
+      disclosure.open = opening
+      delete disclosure.dataset.motion
+      stop()
+      if (followScroll) panel.scrollTop = opening ? panel.scrollHeight - panel.clientHeight : destination
+      stopTerminalMotion.current = () => {}
+    }
+    const follow = () => {
+      const progress = animation.effect.getComputedTiming().progress ?? 1
+      if (followScroll) panel.scrollTop = initialScroll + (destination - initialScroll) * progress
+      if (animation.playState === 'finished') {
+        finish()
+      } else {
+        frame = window.requestAnimationFrame(follow)
+      }
+    }
+    panel.addEventListener('wheel', releaseScroll, { passive: true })
+    panel.addEventListener('touchstart', releaseScroll, { passive: true })
+    panel.addEventListener('keydown', handleKey)
+    reducedMotion.addEventListener('change', finish)
+    stopTerminalMotion.current = stop
+    frame = window.requestAnimationFrame(follow)
+  }
+
   return (
     <>
       <section className="about-intro space-y-5">
@@ -845,7 +944,7 @@ function AboutRoute({ onNavigate, activePath, isDark }) {
           Hello, World...!
         </h1>
         <div className="profession-tags" aria-label="Professional focus">
-          {['Full-stack Developer', 'MERN Stack', 'AI'].map(
+          {['AI & Full-stack Developer', 'MERN Stack', 'AI Trainer'].map(
             (tag) => (
               <span key={tag} className="profession-tag">
                 {tag}
@@ -854,13 +953,25 @@ function AboutRoute({ onNavigate, activePath, isDark }) {
           )}
         </div>
         <p className="font-code-md text-body-lg text-on-surface-variant">
-          Full-stack developer skilled in React, Next.js, Node.js, Express, MongoDB, REST APIs, and Tailwind CSS. I build responsive websites, dashboards, and full-stack web apps with clean UI and reliable backend functionality.
+          I build full-stack web apps and AI-powered tools. As an AI Trainer at Handshake AI, I evaluate language models for reasoning, accuracy, and instruction following.
         </p>
         <div className="flex flex-wrap gap-3">
           <a
+            href="/projects"
+            onClick={(event) => {
+              if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || event.button !== 0) return
+              event.preventDefault()
+              onNavigate('/projects')
+            }}
+            className="action-btn action-btn-primary"
+          >
+            View projects
+            <span className="material-symbols-outlined text-base" aria-hidden="true">arrow_forward</span>
+          </a>
+          <a
             href="/Arush_CV.pdf"
             download
-            className="action-btn action-btn-primary"
+            className="action-btn action-btn-ghost"
           >
             <span className="material-symbols-outlined action-btn__icon text-base" aria-hidden="true">
               download
@@ -870,7 +981,21 @@ function AboutRoute({ onNavigate, activePath, isDark }) {
         </div>
       </section>
 
-      <TerminalPanel onNavigate={onNavigate} activePath={activePath} isDark={isDark} />
+      <details className="terminal-disclosure">
+        <summary onClick={handleTerminalToggle}>
+          <span className="material-symbols-outlined text-base" aria-hidden="true">terminal</span>
+          Explore with the terminal
+          <span className="terminal-disclosure__chevron material-symbols-outlined text-base" aria-hidden="true">expand_more</span>
+        </summary>
+        <div className="terminal-disclosure__reveal">
+          <div className="terminal-disclosure__body">
+            <p className="terminal-disclosure__hint text-sm text-on-surface-variant">
+              Try <code>help</code> for commands or <code>whoami</code> for more about me.
+            </p>
+            <TerminalPanel onNavigate={onNavigate} activePath={activePath} isDark={isDark} />
+          </div>
+        </div>
+      </details>
     </>
   )
 }
@@ -927,7 +1052,7 @@ function ProjectsRoute() {
         {projects.map((project) => (
           <div
             key={project.name}
-            className="lift-on-hover group flex flex-col justify-between gap-3 border border-white/10 p-4 transition-colors"
+            className="project-entry lift-on-hover group flex flex-col justify-between gap-3 border border-white/10 p-4 transition-colors"
           >
             <div className="space-y-2">
               <div className="project-heading flex flex-wrap items-center gap-3">
@@ -944,7 +1069,7 @@ function ProjectsRoute() {
                   href={project.githubUrl}
                   target="_blank"
                   rel="noreferrer"
-                  className="interactive-press inline-flex items-center gap-1.5 text-sm text-primary hover:text-[#86efac]"
+                  className="evidence-link interactive-press inline-flex items-center gap-1.5 text-sm text-primary hover:text-[#86efac]"
                   title={`Open ${project.name} GitHub Repository`}
                 >
                   <ContactBrandIcon brand="github" className="h-[16px] w-[16px]" />
@@ -956,7 +1081,7 @@ function ProjectsRoute() {
                   href={project.demoUrl}
                   target="_blank"
                   rel="noreferrer"
-                  className="interactive-press inline-flex items-center gap-1.5 text-sm text-primary hover:text-[#86efac]"
+                  className="evidence-link interactive-press inline-flex items-center gap-1.5 text-sm text-primary hover:text-[#86efac]"
                   title={`Open ${project.name} live demo`}
                 >
                   <span className="material-symbols-outlined text-lg leading-none" aria-hidden="true">
@@ -991,6 +1116,7 @@ function OpenPullRequestsRoute() {
   const { data, status } = useGithubPullRequests()
   const { repositories, totalCount, fetchedCount } = data
   const [selectedRepositoryName, setSelectedRepositoryName] = useState('')
+  const repositoryPanelRef = useRef(null)
   const selectedRepository = repositories.find(
     (repository) => repository.fullName === selectedRepositoryName,
   )
@@ -1007,11 +1133,26 @@ function OpenPullRequestsRoute() {
     }
 
     const previousOverflow = document.body.style.overflow
+    const trigger = document.activeElement
     document.body.style.overflow = 'hidden'
+    repositoryPanelRef.current?.querySelector('button')?.focus()
 
     const handleKeyDown = (event) => {
       if (event.key === 'Escape') {
         setSelectedRepositoryName('')
+      }
+      if (event.key === 'Tab') {
+        const controls = repositoryPanelRef.current?.querySelectorAll('a[href], button:not([disabled])')
+        if (!controls?.length) return
+        const first = controls[0]
+        const last = controls[controls.length - 1]
+        if (event.shiftKey && document.activeElement === first) {
+          event.preventDefault()
+          last.focus()
+        } else if (!event.shiftKey && document.activeElement === last) {
+          event.preventDefault()
+          first.focus()
+        }
       }
     }
 
@@ -1020,6 +1161,7 @@ function OpenPullRequestsRoute() {
     return () => {
       document.body.style.overflow = previousOverflow
       window.removeEventListener('keydown', handleKeyDown)
+      if (trigger instanceof HTMLElement && trigger.isConnected) trigger.focus({ preventScroll: true })
     }
   }, [selectedRepository])
 
@@ -1074,6 +1216,7 @@ function OpenPullRequestsRoute() {
                 type="button"
                 className={`pr-repo-card lift-on-hover ${isSelected ? 'pr-repo-card--active' : ''}`}
                 aria-expanded={isSelected}
+                aria-haspopup="dialog"
                 onClick={() => setSelectedRepositoryName(repository.fullName)}
               >
                 <span className="pr-repo-card__header">
@@ -1104,6 +1247,10 @@ function OpenPullRequestsRoute() {
                   <span>{repository.mergedCount} merged</span>
                   <span>{repository.closedCount} closed</span>
                 </span>
+                <span className="pr-repo-card__action">
+                  View pull requests
+                  <span className="material-symbols-outlined" aria-hidden="true">arrow_forward</span>
+                </span>
                 <span className="pr-repo-card__updated">
                   Updated {formatGithubDate(repository.latestUpdatedAt)}
                 </span>
@@ -1130,6 +1277,7 @@ function OpenPullRequestsRoute() {
           }}
         >
           <section
+            ref={repositoryPanelRef}
             className="repo-pr-panel"
             role="dialog"
             aria-modal="true"
@@ -1258,7 +1406,7 @@ function EducationRoute() {
       </div>
       <div className="space-y-4">
         {education.map((item) => (
-          <article key={item.degree} className="lift-on-hover border border-white/10 p-4">
+          <article key={item.degree} className="education-entry border border-white/10 p-4">
             <div className="flex flex-wrap items-start justify-between gap-3">
               <h3 className="font-headline-md text-body-lg text-on-surface">{item.degree}</h3>
               <span className="font-code-md text-xs text-on-surface-variant/60">{item.timeline}</span>
@@ -1268,7 +1416,7 @@ function EducationRoute() {
           </article>
         ))}
       </div>
-      <article className="rounded-lg border border-primary/30 bg-primary/5 p-4">
+      <article className="education-entry rounded-lg border border-primary/30 bg-primary/5 p-4">
         <h3 className="font-headline-md text-body-md text-primary">Exams Qualified</h3>
         <ul className="mt-2 space-y-2">
           {examsQualified.map((exam) => (
@@ -1473,8 +1621,9 @@ function App() {
         </nav>
       </header>
 
-      <main id="main-content" className="site-main mx-auto w-full max-w-[840px] flex-1 px-5 sm:px-6">
-        <div key={currentPath} className="route-stage space-y-12 sm:space-y-14">
+      <main id="main-content" className="site-main mx-auto w-full max-w-[900px] px-5 sm:px-6">
+        <div key={currentPath} className="content-panel" tabIndex={0} role="region" aria-label="Portfolio content">
+          <div className="route-stage space-y-12 sm:space-y-14">
           {currentPath === '/' && (
             <AboutRoute onNavigate={navigate} activePath={currentPath} isDark={isDark} />
           )}
@@ -1483,6 +1632,7 @@ function App() {
           {currentPath === '/open-source' && <OpenPullRequestsRoute />}
           {currentPath === '/skills' && <SkillsRoute />}
           {currentPath === '/education' && <EducationRoute />}
+          </div>
         </div>
       </main>
 

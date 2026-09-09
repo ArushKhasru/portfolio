@@ -10,7 +10,12 @@
 }
 
 .app-shell {
-  min-height: 100dvh;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  height: 100dvh;
+  min-height: 0;
+  overflow: hidden;
   transition:
     background-color 220ms ease,
     color 220ms ease;
@@ -317,12 +322,12 @@
 }
 
 :root[data-theme='dark'] {
-  --focus-ring: rgba(74, 222, 128, 0.4);
+  --focus-ring: #4ade80;
   --card-lift-shadow: 0 0 25px rgba(34, 197, 94, 0.15);
 }
 
 :root[data-theme='light'] {
-  --focus-ring: rgb(16 185 129 / 0.45);
+  --focus-ring: #047857;
   --card-lift-shadow: 0 12px 28px -20px rgb(15 23 42 / 0.3);
 }
 
@@ -430,10 +435,11 @@
 .route-link[data-active='true']::after {
   transform: scaleX(1);
   transform-origin: left;
-  animation: active-route-pulse 2.8s ease-in-out infinite;
+  opacity: 1;
 }
 
-.route-link:hover::after {
+.route-link:hover::after,
+.route-link:focus-visible::after {
   transform: scaleX(1);
   transform-origin: left;
 }
@@ -847,39 +853,9 @@
 }
 
 .site-header {
-  --header-surface: 3 4 5;
-  --header-opacity: 0.76;
-  --header-rule: rgb(219 231 247 / 0.1);
-  position: fixed;
-  top: 0;
-  right: 0;
-  left: 0;
+  position: relative;
   z-index: 40;
-  /* The denser fallback keeps text legible without backdrop-filter support. */
-  background: rgb(var(--header-surface) / 0.96);
-  border-bottom: 1px solid var(--header-rule);
-}
-
-:root[data-theme='light'] .site-header {
-  --header-surface: 248 250 252;
-  --header-opacity: 0.84;
-  --header-rule: rgb(15 23 42 / 0.12);
-}
-
-@supports ((backdrop-filter: blur(16px)) or (-webkit-backdrop-filter: blur(16px))) {
-  .site-header {
-    background: rgb(var(--header-surface) / var(--header-opacity));
-    -webkit-backdrop-filter: blur(16px);
-    backdrop-filter: blur(16px);
-  }
-}
-
-@media (prefers-reduced-transparency: reduce), (prefers-contrast: more) {
-  .site-header {
-    background: rgb(var(--header-surface));
-    -webkit-backdrop-filter: none;
-    backdrop-filter: none;
-  }
+  background: transparent;
 }
 
 .site-footer {
@@ -887,9 +863,34 @@
 }
 
 .site-main {
-  padding-top: 138px;
-  padding-bottom: 36px;
+  display: grid;
+  min-width: 0;
+  min-height: 0;
+  padding-top: 16px;
+  padding-bottom: 16px;
 }
+
+.content-panel {
+  min-width: 0;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior-y: contain;
+  scrollbar-width: none;
+  scroll-padding-block: 24px;
+  padding: clamp(16px, 3vw, 32px);
+  background: transparent;
+}
+
+.content-panel::-webkit-scrollbar {
+  display: none;
+}
+
+.content-panel:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 3px;
+}
+
+
 
 .desktop-nav {
   flex-wrap: wrap;
@@ -1167,6 +1168,7 @@
 }
 
 .repo-pr-modal {
+  margin: 0 !important;
   position: fixed;
   inset: 0;
   z-index: 80;
@@ -1577,11 +1579,6 @@
     font-size: 1.85rem;
   }
 
-  .site-main {
-    padding-top: 190px;
-    padding-bottom: 40px;
-  }
-
   .footer-copy {
     font-size: 0.75rem;
   }
@@ -1675,4 +1672,208 @@
     opacity: 1;
     transform: none;
   }
+}
+
+/* Quiet feedback for reading; directional feedback for actions. */
+:root {
+  --interaction-tint: rgb(74 222 128 / 0.045);
+  --interaction-line: rgb(74 222 128 / 0.45);
+  --interaction-accent: #86efac;
+}
+
+:root[data-theme='light'] {
+  --interaction-tint: rgb(5 150 105 / 0.045);
+  --interaction-line: rgb(5 150 105 / 0.4);
+  --interaction-accent: #047857;
+}
+
+.route-link:focus-visible,
+.contact-chip:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 3px;
+}
+
+.terminal-status {
+  position: relative;
+}
+
+.terminal-status__idle,
+.terminal-status__active {
+  transition: opacity 160ms ease;
+}
+
+.terminal-status__active {
+  position: absolute;
+  inset: 0 0 auto auto;
+  white-space: nowrap;
+  opacity: 0;
+  color: var(--interaction-accent);
+}
+
+.terminal-shell:focus-within .terminal-status__idle {
+  opacity: 0;
+}
+
+.terminal-shell:focus-within .terminal-status__active {
+  opacity: 1;
+}
+
+.evidence-link {
+  text-decoration: underline;
+  text-decoration-color: transparent;
+  text-underline-offset: 4px;
+  transition: text-decoration-color 180ms ease, color 180ms ease, transform 180ms ease;
+}
+
+.evidence-link .material-symbols-outlined,
+.pr-repo-card__action .material-symbols-outlined {
+  transition: transform 180ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.evidence-link:is(:hover, :focus-visible) {
+  text-decoration-color: currentColor;
+}
+
+.evidence-link:is(:hover, :focus-visible) .material-symbols-outlined {
+  transform: translate(2px, -2px);
+}
+
+:root .project-entry:focus-within {
+  border-color: var(--interaction-line) !important;
+  background-color: var(--interaction-tint);
+}
+
+.action-btn:focus-visible::after {
+  opacity: 1;
+  transform: skewX(-18deg) translateX(360%);
+}
+
+.action-btn:focus-visible .action-btn__icon {
+  transform: translateY(2px);
+}
+
+.experience-entry,
+.education-entry {
+  border-radius: 8px;
+  transition: border-color 180ms ease, background-color 180ms ease;
+}
+
+.experience-responsibilities li,
+.education-entry h3,
+.skill-card__item {
+  transition: color 180ms ease, background-color 180ms ease;
+}
+
+.experience-responsibilities li::marker {
+  color: var(--interaction-accent);
+}
+
+.pr-repo-card__action {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--interaction-accent);
+  font-size: 0.8rem;
+}
+
+.pr-repo-card__action .material-symbols-outlined {
+  font-size: 1rem;
+}
+
+.pr-repo-card:is(:hover, :focus-visible) .pr-repo-card__action .material-symbols-outlined {
+  transform: translateX(4px);
+}
+
+.pr-repo-card:active {
+  transform: scale(0.99);
+}
+
+/* Reading surfaces stay still; they never imply an action on click. */
+.skill-card:is(:hover, :active),
+.skill-card:hover .skill-card__item {
+  transform: none;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  :root .experience-entry:hover,
+  :root .education-entry:hover {
+    border-color: var(--interaction-line) !important;
+    background-color: var(--interaction-tint);
+  }
+
+  .experience-responsibilities li:hover,
+  .skill-card .skill-card__item:hover {
+    color: var(--interaction-accent) !important;
+    background-color: var(--interaction-tint);
+  }
+
+  :root .education-entry:hover h3 {
+    color: var(--interaction-accent) !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .app-shell *,
+  .app-shell *::before,
+  .app-shell *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+
+  .app-shell :is(.lift-on-hover, .interactive-press, .action-btn, .route-link, .contact-chip, .theme-toggle):is(:hover, :focus-visible, :active),
+  .app-shell .evidence-link .material-symbols-outlined,
+  .app-shell .pr-repo-card__action .material-symbols-outlined,
+  .app-shell .action-btn .action-btn__icon,
+  .app-shell .pr-repo-card__icon,
+  .app-shell .contact-chip svg,
+  .app-shell .repo-pr-panel__close .material-symbols-outlined {
+    transform: none;
+  }
+}
+
+.terminal-disclosure > summary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: fit-content;
+  min-height: 44px;
+  padding-block: 8px;
+  color: var(--interaction-accent);
+  font-size: 0.9rem;
+  cursor: pointer;
+  list-style: none;
+  text-underline-offset: 4px;
+}
+
+.terminal-disclosure > summary::-webkit-details-marker {
+  display: none;
+}
+
+.terminal-disclosure > summary:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+
+.terminal-disclosure__chevron {
+  transition: transform 550ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.terminal-disclosure[open]:not([data-motion='closing']) .terminal-disclosure__chevron {
+  transform: rotate(180deg);
+}
+
+.terminal-disclosure__hint {
+  margin-block: 8px 16px;
+}
+
+.terminal-disclosure__reveal {
+  overflow: hidden;
+  display: grid;
+  grid-template-rows: 1fr;
+}
+
+.terminal-disclosure__body {
+  min-height: 0;
+  overflow: hidden;
 }

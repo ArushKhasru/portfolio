@@ -7,41 +7,10 @@
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="icon" type="image/png" href="/Logo.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Arush Khasru</title>
-    <script>
-      ;(() => {
-        const titleText = 'Arush Khasru'
-        let currentText = ''
-        let isDeleting = false
-
-        function tick() {
-          if (!isDeleting) {
-            if (currentText.length < titleText.length) {
-              currentText = titleText.slice(0, currentText.length + 1)
-              document.title = currentText
-              setTimeout(tick, 150)
-            } else {
-              isDeleting = true
-              setTimeout(tick, 1000)
-            }
-          } else {
-            if (currentText.length > 0) {
-              currentText = currentText.slice(1)
-              document.title = currentText || '\u200B'
-              setTimeout(tick, 100)
-            } else {
-              isDeleting = false
-              setTimeout(tick, 500)
-            }
-          }
-        }
-
-        setTimeout(tick, 1000)
-      })()
-    </script>
+    <title>Arush Khasru | AI &amp; Full-stack Developer</title>
     <meta
       name="description"
-      content="Portfolio of Arush Khasru - MCA student, UGC NET (Computer Science) qualified, and full-stack developer focused on real-time systems."
+      content="Arush Khasru is an AI and full-stack developer and AI Trainer at Handshake AI. Explore his projects, experience, open-source contributions, and MCA education (2024-2026)."
     />
     <script>
       ;(() => {
