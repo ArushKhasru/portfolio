@@ -102,7 +102,7 @@ const projects = [
     stack: 'Next.js | Express | Socket.IO',
     description:
       'Student developer community and coding-practice platform built as a Turborepo monorepo with MongoDB.',
-    demoUrl: 'http://cuhp-devs-web.vercel.app/',
+    demoUrl: 'http://cuhp-devs-web-pi.vercel.app/',
     githubUrl: 'https://github.com/ArushKhasru/cuhp-devs',
   },
   {
