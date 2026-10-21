@@ -149,6 +149,10 @@ const skillGroups = [
     values: ['Git', 'GitHub', 'Figma', 'Postman', 'npm'],
   },
   {
+    title: 'Agentic AI Tools',
+    values: ['Codex', 'Claude Code', 'Gemini CLI'],
+  },
+  {
     title: 'Core Concepts',
     values: ['REST APIs', 'JWT Authentication', 'OOP', 'DSA'],
   },
@@ -175,26 +179,6 @@ function normalizePath(pathname) {
   }
 
   return validPaths.includes(pathname) ? pathname : '/'
-}
-
-function getInitialTheme() {
-  if (typeof window === 'undefined') {
-    return true
-  }
-
-  if (document.documentElement.dataset.theme) {
-    return document.documentElement.dataset.theme === 'dark'
-  }
-
-  const savedTheme = window.localStorage.getItem('portfolio-theme')
-  if (savedTheme === 'light') {
-    return false
-  }
-  if (savedTheme === 'dark') {
-    return true
-  }
-
-  return true
 }
 
 function getInitialLoaderVisibility() {
@@ -441,7 +425,7 @@ function useGithubPullRequests() {
   return state
 }
 
-function StartupLoader({ isDark, onComplete }) {
+function StartupLoader({ onComplete }) {
   const loaderName = 'ARUSH_KHASRU'
   const [typedName, setTypedName] = useState('')
   const [lineProgress, setLineProgress] = useState(0)
@@ -462,7 +446,7 @@ function StartupLoader({ isDark, onComplete }) {
           setTypedName(loaderName.slice(0, typedName.length + 1))
         }, TYPE_DELAY_MS)
       } else {
-        setPhase('holding')
+        timer = window.setTimeout(() => setPhase('holding'), 0)
       }
     } else if (phase === 'holding') {
       timer = window.setTimeout(() => {
@@ -474,7 +458,7 @@ function StartupLoader({ isDark, onComplete }) {
           setLineProgress((current) => Math.min(current + 8, 100))
         }, LINE_PROGRESS_DELAY_MS)
       } else {
-        setPhase('completing')
+        timer = window.setTimeout(() => setPhase('completing'), 0)
       }
     } else if (phase === 'completing') {
       if (!hasCompletedRef.current) {
@@ -490,7 +474,7 @@ function StartupLoader({ isDark, onComplete }) {
 
   return (
     <section
-      className={`startup-loader ${isDark ? 'startup-loader--dark' : 'startup-loader--light'}`}
+      className="startup-loader startup-loader--dark"
       aria-label="Loading portfolio"
     >
       <div className="startup-loader__content">
@@ -503,19 +487,19 @@ function StartupLoader({ isDark, onComplete }) {
           )}
         </p>
         <div className="startup-loader__line-loader mt-8" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={lineProgress}>
-          <span className="startup-loader__line-loader-fill" style={{ width: `${lineProgress}%` }}></span>
+          <span className="startup-loader__line-loader-fill" style={{ transform: `scaleX(${lineProgress / 100})` }}></span>
         </div>
       </div>
     </section>
   )
 }
 
-function AKLogo({ onOpenAbout, isDark }) {
+function AKLogo({ onOpenAbout }) {
   return (
     <button
       type="button"
       onClick={onOpenAbout}
-      className={`logo-node relative flex h-[46px] w-[46px] shrink-0 items-center justify-center overflow-hidden rounded-lg md:h-[110px] md:w-[104px] md:rounded-xl ${isDark ? 'logo-node--flicker' : ''}`}
+      className="logo-node logo-node--flicker relative flex h-[46px] w-[46px] shrink-0 items-center justify-center overflow-hidden rounded-lg md:h-[110px] md:w-[104px] md:rounded-xl"
       aria-label="Go to About section"
       title="About"
     >
@@ -557,7 +541,7 @@ function ContactBrandIcon({ brand, className = 'h-[18px] w-[18px]' }) {
   )
 }
 
-function TerminalPanel({ onNavigate, activePath, isDark }) {
+function TerminalPanel({ onNavigate, activePath }) {
   const routeNames = navLinks.map((item) => (item.href === '/' ? 'about' : item.href.replace('/', '')))
   const routeAliases = {
     source: 'open-source',
@@ -712,7 +696,7 @@ Education: MCA, 2024 - 2026 | UGC NET (Computer Science), Dec 2025`,
 
     if (normalized === 'portfolio --status') {
       appendOutput(
-        `status=online, route=${activePath}, theme=${isDark ? 'dark' : 'light'}, uptime=stable`,
+        `status=online, route=${activePath}, theme=dark, uptime=stable`,
       )
       return
     }
@@ -828,7 +812,7 @@ Education: MCA, 2024 - 2026 | UGC NET (Computer Science), Dec 2025`,
                 autoComplete="off"
                 spellCheck={false}
               />
-              {isDark && input === '' && (
+              {input === '' && (
                 <span className="absolute left-0 top-1/2 h-4 w-2 -translate-y-1/2 animate-[loader-caret-blink_1s_infinite] bg-primary/60"></span>
               )}
             </div>
@@ -839,7 +823,7 @@ Education: MCA, 2024 - 2026 | UGC NET (Computer Science), Dec 2025`,
   )
 }
 
-function AboutRoute({ onNavigate, activePath, isDark }) {
+function AboutRoute({ onNavigate, activePath }) {
   const stopTerminalMotion = useRef(() => {})
   const terminalReturnScroll = useRef(0)
 
@@ -992,7 +976,7 @@ function AboutRoute({ onNavigate, activePath, isDark }) {
             <p className="terminal-disclosure__hint text-sm text-on-surface-variant">
               Try <code>help</code> for commands or <code>whoami</code> for more about me.
             </p>
-            <TerminalPanel onNavigate={onNavigate} activePath={activePath} isDark={isDark} />
+            <TerminalPanel onNavigate={onNavigate} activePath={activePath} />
           </div>
         </div>
       </details>
@@ -1435,7 +1419,6 @@ function EducationRoute() {
 }
 
 function App() {
-  const [isDark, setIsDark] = useState(getInitialTheme)
   const [showStartupLoader, setShowStartupLoader] = useState(getInitialLoaderVisibility)
   const [currentPath, setCurrentPath] = useState(() => {
     if (typeof window === 'undefined') {
@@ -1458,25 +1441,6 @@ function App() {
     return () => window.removeEventListener('popstate', handlePopState)
   }, [])
 
-  useEffect(() => {
-    document.documentElement.classList.toggle('dark', isDark)
-    document.documentElement.dataset.theme = isDark ? 'dark' : 'light'
-    window.localStorage.setItem('portfolio-theme', isDark ? 'dark' : 'light')
-  }, [isDark])
-
-  useEffect(() => {
-    const savedTheme = window.localStorage.getItem('portfolio-theme')
-    if (savedTheme) {
-      return undefined
-    }
-
-    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)')
-    const handleThemeChange = (event) => setIsDark(event.matches)
-
-    mediaQuery.addEventListener('change', handleThemeChange)
-    return () => mediaQuery.removeEventListener('change', handleThemeChange)
-  }, [])
-
   const navigate = (path) => {
     const normalized = normalizePath(path)
     if (normalized === currentPath) {
@@ -1492,24 +1456,22 @@ function App() {
   }, [])
 
   if (showStartupLoader) {
-    return <StartupLoader isDark={isDark} onComplete={handleStartupComplete} />
+    return <StartupLoader onComplete={handleStartupComplete} />
   }
 
   return (
-    <div className={`app-shell flex min-h-screen flex-col bg-background text-on-background selection:bg-primary selection:text-on-primary ${isDark ? 'night-sky' : 'dot-grid-light'}`}>
-      {isDark && <Starfield />}
-      {isDark && <div className="cyber-scanline" aria-hidden="true" />}
+    <div className="app-shell night-sky flex min-h-screen flex-col bg-background text-on-background selection:bg-primary selection:text-on-primary">
+      <Starfield />
       <header className="site-header full-width">
         <nav
           className="site-header__primary mx-auto flex max-w-[960px] items-center justify-between gap-4 px-5 py-3 font-['Space_Grotesk'] md:max-w-[900px] md:gap-6 md:px-6 md:py-5"
           aria-label="Primary navigation"
         >
           <div className="flex min-w-0 items-center gap-3 md:gap-4">
-            <AKLogo onOpenAbout={() => navigate('/')} isDark={isDark} />
+            <AKLogo onOpenAbout={() => navigate('/')} />
             <div className="min-w-0">
               <p
-                className={`brand-name font-bold ${isDark ? 'text-[#e5e7eb]' : 'text-slate-800'
-                  }`}
+                className="brand-name font-bold text-on-surface"
               >
                 Arush Khasru
               </p>
@@ -1526,19 +1488,7 @@ function App() {
                       }}
                       aria-current={isActive ? 'page' : undefined}
                       data-active={isActive}
-                      className={`route-link transition-colors ${isDark
-                          ? isActive
-                            ? 'text-[#86efac]'
-                            : 'text-[#4ade80] hover:text-[#86efac]'
-                          : isActive
-                            ? 'text-emerald-700'
-                            : 'text-emerald-600 hover:text-emerald-700'
-                        } ${index !== navLinks.length - 1
-                          ? isDark
-                            ? 'mr-3 border-r border-[#22c55e]/50 pr-3'
-                            : 'mr-3 border-r border-emerald-500/50 pr-3'
-                          : ''
-                        }`}
+                      className={`route-link transition-colors ${index !== navLinks.length - 1 ? 'mr-3 border-r pr-3' : ''}`}
                     >
                       {link.label}
                     </a>
@@ -1555,10 +1505,7 @@ function App() {
                   href={contact.href}
                   target={contact.key === 'email' ? undefined : '_blank'}
                   rel={contact.key === 'email' ? undefined : 'noreferrer'}
-                  className={`contact-chip inline-flex items-center rounded-full p-2 text-sm ${isDark
-                      ? 'text-slate-300 hover:bg-[#363a38] hover:text-[#f8fafc]'
-                      : 'text-slate-700 hover:bg-slate-200 hover:text-slate-900'
-                    }`}
+                  className="contact-chip inline-flex items-center rounded-full p-2 text-sm"
                   title={`${contact.label}: ${contact.display}`}
                   aria-label={`${contact.label}: ${contact.display}`}
                 >
@@ -1566,25 +1513,6 @@ function App() {
                 </a>
               ))}
             </div>
-            <button
-              type="button"
-              className={`theme-toggle rounded-full p-2 transition-all ${isDark
-                  ? 'text-slate-300 hover:bg-[#363a38] hover:text-[#f8fafc]'
-                  : 'text-slate-700 hover:bg-slate-200 hover:text-slate-900'
-                }`}
-              aria-label="Toggle theme"
-              aria-pressed={isDark}
-              title={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
-              onClick={() => setIsDark((previous) => !previous)}
-            >
-              <span
-                className={`material-symbols-outlined transition-transform duration-300 ${isDark ? 'rotate-0' : 'rotate-180'
-                  }`}
-                aria-hidden="true"
-              >
-                {isDark ? 'light_mode' : 'dark_mode'}
-              </span>
-            </button>
           </div>
         </nav>
         <nav aria-label="Mobile navigation" className="mobile-nav mx-auto flex max-w-[960px] items-center px-5 pb-3 text-center text-[12px] font-semibold md:hidden">
@@ -1600,19 +1528,7 @@ function App() {
                 }}
                 aria-current={isActive ? 'page' : undefined}
                 data-active={isActive}
-                className={`route-link transition-colors ${isDark
-                    ? isActive
-                      ? 'text-[#86efac]'
-                      : 'text-[#4ade80] hover:text-[#86efac]'
-                    : isActive
-                      ? 'text-emerald-700'
-                      : 'text-emerald-600 hover:text-emerald-700'
-                  } ${index !== navLinks.length - 1
-                    ? isDark
-                      ? 'border-r border-[#22c55e]/40'
-                      : 'border-r border-emerald-500/40'
-                    : ''
-                  }`}
+                className={`route-link transition-colors ${index !== navLinks.length - 1 ? 'border-r' : ''}`}
               >
                 {link.label}
               </a>
@@ -1625,7 +1541,7 @@ function App() {
         <div key={currentPath} className="content-panel" tabIndex={0} role="region" aria-label="Portfolio content">
           <div className="route-stage space-y-12 sm:space-y-14">
           {currentPath === '/' && (
-            <AboutRoute onNavigate={navigate} activePath={currentPath} isDark={isDark} />
+            <AboutRoute onNavigate={navigate} activePath={currentPath} />
           )}
           {currentPath === '/experience' && <ExperienceRoute />}
           {currentPath === '/projects' && <ProjectsRoute />}
@@ -1638,8 +1554,7 @@ function App() {
 
       <footer className="site-footer full-width">
         <div
-          className={`site-footer__content mx-auto flex max-w-[960px] items-center justify-center gap-3 px-5 py-3 font-mono text-xs uppercase md:max-w-[800px] md:px-6 md:py-4 md:text-center md:tracking-widest ${isDark ? 'text-[#4ade80]' : 'text-emerald-700'
-            }`}
+          className="site-footer__content mx-auto flex max-w-[960px] items-center justify-center gap-3 px-5 py-3 font-mono text-xs uppercase md:max-w-[800px] md:px-6 md:py-4 md:text-center md:tracking-widest text-primary"
         >
           <span className="footer-copy">© arushkhasru.me · 2026</span>
           <div className="flex items-center gap-1 md:hidden" aria-label="Contact links">

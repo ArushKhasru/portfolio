@@ -7,13 +7,19 @@
 :root {
   --page-bg: #030405;
   --page-fg: #e5e7eb;
+  --surface: #101714;
+  --surface-raised: #18221c;
+  --text-strong: #f1f5f2;
+  --text-muted: #a8b8ae;
+  --text-muted-rgb: 168 184 174;
+  --accent: #4ade80;
+  --accent-bright: #a7f3c1;
+  --accent-rgb: 74 222 128;
+  --accent-ink: #07170d;
+  --line: #34483a;
+  --star-rgb: 219 231 247;
+  --sky-rgb: 117 153 198;
   color-scheme: dark;
-}
-
-:root[data-theme='light'] {
-  --page-bg: #f3f6fb;
-  --page-fg: #0f172a;
-  color-scheme: light;
 }
 
 html,
@@ -30,4 +36,14 @@ body {
   transition:
     background-color 220ms ease,
     color 220ms ease;
+}
+
+::selection {
+  background: var(--accent);
+  color: var(--accent-ink);
+}
+
+* {
+  scrollbar-color: var(--line) var(--page-bg);
+  caret-color: var(--accent);
 }

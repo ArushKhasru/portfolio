@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" class="dark" data-theme="dark">
   <head>
     <meta charset="UTF-8" />
     <link id="app-favicon" rel="icon" href="/favicon.ico" sizes="any" />
@@ -12,19 +12,6 @@
       name="description"
       content="Arush Khasru is an AI and full-stack developer and AI Trainer at Handshake AI. Explore his projects, experience, open-source contributions, and MCA education (2024-2026)."
     />
-    <script>
-      ;(() => {
-        try {
-          const savedTheme = window.localStorage.getItem('portfolio-theme')
-          const shouldUseDark = savedTheme !== 'light'
-          document.documentElement.classList.toggle('dark', shouldUseDark)
-          document.documentElement.dataset.theme = shouldUseDark ? 'dark' : 'light'
-        } catch {
-          document.documentElement.classList.add('dark')
-          document.documentElement.dataset.theme = 'dark'
-        }
-      })()
-    </script>
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
     <link
       href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap"

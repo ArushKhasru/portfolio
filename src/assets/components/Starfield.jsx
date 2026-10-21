@@ -90,14 +90,14 @@ export default function Starfield() {
       <svg className="starfield__sky" viewBox="0 0 1600 1000" preserveAspectRatio="xMidYMid slice" focusable="false">
         <defs>
           <radialGradient id="starlight">
-            <stop offset="0%" stopColor="#e4efff" stopOpacity="0.42" />
-            <stop offset="100%" stopColor="#b9d5ff" stopOpacity="0" />
+            <stop offset="0%" stopColor="rgb(var(--star-rgb))" stopOpacity="0.42" />
+            <stop offset="100%" stopColor="rgb(var(--star-rgb))" stopOpacity="0" />
           </radialGradient>
         </defs>
         {stars.map((star, index) => (
           <g key={index} className="starfield__twinkle" style={{ animationDelay: `${-(index * 0.73) % 9}s`, animationDuration: `${3.5 + (index % 8) * 0.6}s` }}>
             {index % 13 === 0 && <circle cx={star.x} cy={star.y} r="8" fill="url(#starlight)" />}
-            <circle cx={star.x} cy={star.y} r={star.radius} fill="#dbe7f7" opacity={star.opacity} />
+            <circle cx={star.x} cy={star.y} r={star.radius} fill="rgb(var(--star-rgb))" opacity={star.opacity} />
           </g>
         ))}
       </svg>
