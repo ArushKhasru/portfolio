@@ -1,7 +1,6 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import './App.css'
 import Starfield from './assets/components/Starfield'
-import PortfolioIntro from './assets/components/PortfolioIntro'
 
 const personalDetails = {
   name: 'Arush Khasru',
@@ -182,19 +181,6 @@ function normalizePath(pathname) {
   }
 
   return validPaths.includes(pathname) ? pathname : '/'
-}
-
-function getInitialLoaderVisibility() {
-  if (typeof window === 'undefined') {
-    return false
-  }
-
-  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return false
-  try {
-    return window.sessionStorage.getItem('portfolio-intro-film-v1-seen') !== 'true'
-  } catch {
-    return false
-  }
 }
 
 function formatGithubCount(value) {
@@ -790,7 +776,7 @@ function OpportunityLink({ kind }) {
   )
 }
 
-function AboutRoute({ onNavigate, activePath, onReplayIntro }) {
+function AboutRoute({ onNavigate, activePath }) {
   const stopTerminalMotion = useRef(() => {})
   const terminalReturnScroll = useRef(0)
 
@@ -930,11 +916,6 @@ function AboutRoute({ onNavigate, activePath, onReplayIntro }) {
             </span>
             Download CV
           </a>
-          <button type="button" className="action-btn action-btn-ghost" onClick={onReplayIntro}>
-            <svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true"><path d="m6 4 10 6-10 6Z" /></svg>
-            Watch intro
-            <span className="text-on-surface-variant">25s</span>
-          </button>
         </div>
       </section>
 
@@ -1395,7 +1376,6 @@ function EducationRoute() {
 }
 
 function App() {
-  const [showStartupLoader, setShowStartupLoader] = useState(getInitialLoaderVisibility)
   const [currentPath, setCurrentPath] = useState(() => {
     if (typeof window === 'undefined') {
       return '/'
@@ -1424,19 +1404,6 @@ function App() {
     }
     window.history.pushState({}, '', normalized)
     setCurrentPath(normalized)
-  }
-
-  const handleStartupComplete = useCallback(() => {
-    try {
-      window.sessionStorage.setItem('portfolio-intro-film-v1-seen', 'true')
-    } catch {
-      // Visiting the portfolio never depends on storage being available.
-    }
-    setShowStartupLoader(false)
-  }, [])
-
-  if (showStartupLoader) {
-    return <PortfolioIntro onComplete={handleStartupComplete} />
   }
 
   return (
@@ -1521,7 +1488,7 @@ function App() {
         <div key={currentPath} className="content-panel" tabIndex={0} role="region" aria-label="Portfolio content">
           <div className="route-stage space-y-12 sm:space-y-14">
           {currentPath === '/' && (
-            <AboutRoute onNavigate={navigate} activePath={currentPath} onReplayIntro={() => setShowStartupLoader(true)} />
+            <AboutRoute onNavigate={navigate} activePath={currentPath} />
           )}
           {currentPath === '/experience' && <ExperienceRoute />}
           {currentPath === '/projects' && <ProjectsRoute />}
