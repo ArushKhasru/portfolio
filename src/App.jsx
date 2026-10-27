@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import './App.css'
 import Starfield from './assets/components/Starfield'
+import PortfolioIntro from './assets/components/PortfolioIntro'
 
 const personalDetails = {
   name: 'Arush Khasru',
@@ -186,7 +187,12 @@ function getInitialLoaderVisibility() {
     return false
   }
 
-  return window.sessionStorage.getItem('portfolio-intro-seen') !== 'true'
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return false
+  try {
+    return window.sessionStorage.getItem('portfolio-intro-film-v1-seen') !== 'true'
+  } catch {
+    return false
+  }
 }
 
 function formatGithubCount(value) {
@@ -425,74 +431,6 @@ function useGithubPullRequests() {
   return state
 }
 
-function StartupLoader({ onComplete }) {
-  const loaderName = 'ARUSH_KHASRU'
-  const [typedName, setTypedName] = useState('')
-  const [lineProgress, setLineProgress] = useState(0)
-  const [phase, setPhase] = useState('typing') // 'typing', 'holding', 'progressing', 'completing'
-  const hasCompletedRef = useRef(false)
-
-  const TYPE_DELAY_MS = 140
-  const HOLD_DELAY_MS = 600
-  const LINE_PROGRESS_DELAY_MS = 30
-  const FINAL_HOLD_MS = 50
-
-  useEffect(() => {
-    let timer = undefined
-
-    if (phase === 'typing') {
-      if (typedName.length < loaderName.length) {
-        timer = window.setTimeout(() => {
-          setTypedName(loaderName.slice(0, typedName.length + 1))
-        }, TYPE_DELAY_MS)
-      } else {
-        timer = window.setTimeout(() => setPhase('holding'), 0)
-      }
-    } else if (phase === 'holding') {
-      timer = window.setTimeout(() => {
-        setPhase('progressing')
-      }, HOLD_DELAY_MS)
-    } else if (phase === 'progressing') {
-      if (lineProgress < 100) {
-        timer = window.setTimeout(() => {
-          setLineProgress((current) => Math.min(current + 8, 100))
-        }, LINE_PROGRESS_DELAY_MS)
-      } else {
-        timer = window.setTimeout(() => setPhase('completing'), 0)
-      }
-    } else if (phase === 'completing') {
-      if (!hasCompletedRef.current) {
-        hasCompletedRef.current = true
-        timer = window.setTimeout(() => {
-          onComplete()
-        }, FINAL_HOLD_MS)
-      }
-    }
-
-    return () => window.clearTimeout(timer)
-  }, [phase, typedName, lineProgress, onComplete, loaderName])
-
-  return (
-    <section
-      className="startup-loader startup-loader--dark"
-      aria-label="Loading portfolio"
-    >
-      <div className="startup-loader__content">
-        <p className="startup-loader__name">
-          <span className="startup-loader__typed">{typedName}</span>
-          {phase === 'typing' && typedName.length < loaderName.length && (
-            <span aria-hidden="true" className="startup-loader__caret">
-              _
-            </span>
-          )}
-        </p>
-        <div className="startup-loader__line-loader mt-8" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={lineProgress}>
-          <span className="startup-loader__line-loader-fill" style={{ transform: `scaleX(${lineProgress / 100})` }}></span>
-        </div>
-      </div>
-    </section>
-  )
-}
 
 function AKLogo({ onOpenAbout }) {
   return (
@@ -823,7 +761,7 @@ Education: MCA, 2024 - 2026 | UGC NET (Computer Science), Dec 2025`,
   )
 }
 
-function AboutRoute({ onNavigate, activePath }) {
+function AboutRoute({ onNavigate, activePath, onReplayIntro }) {
   const stopTerminalMotion = useRef(() => {})
   const terminalReturnScroll = useRef(0)
 
@@ -962,6 +900,11 @@ function AboutRoute({ onNavigate, activePath }) {
             </span>
             Download CV
           </a>
+          <button type="button" className="action-btn action-btn-ghost" onClick={onReplayIntro}>
+            <svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true"><path d="m6 4 10 6-10 6Z" /></svg>
+            Watch intro
+            <span className="text-on-surface-variant">25s</span>
+          </button>
         </div>
       </section>
 
@@ -1451,12 +1394,16 @@ function App() {
   }
 
   const handleStartupComplete = useCallback(() => {
-    window.sessionStorage.setItem('portfolio-intro-seen', 'true')
+    try {
+      window.sessionStorage.setItem('portfolio-intro-film-v1-seen', 'true')
+    } catch {
+      // Visiting the portfolio never depends on storage being available.
+    }
     setShowStartupLoader(false)
   }, [])
 
   if (showStartupLoader) {
-    return <StartupLoader onComplete={handleStartupComplete} />
+    return <PortfolioIntro onComplete={handleStartupComplete} />
   }
 
   return (
@@ -1541,7 +1488,7 @@ function App() {
         <div key={currentPath} className="content-panel" tabIndex={0} role="region" aria-label="Portfolio content">
           <div className="route-stage space-y-12 sm:space-y-14">
           {currentPath === '/' && (
-            <AboutRoute onNavigate={navigate} activePath={currentPath} />
+            <AboutRoute onNavigate={navigate} activePath={currentPath} onReplayIntro={() => setShowStartupLoader(true)} />
           )}
           {currentPath === '/experience' && <ExperienceRoute />}
           {currentPath === '/projects' && <ProjectsRoute />}
