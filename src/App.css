@@ -438,7 +438,9 @@
 
 .action-btn {
   display: inline-flex;
+  min-height: 44px;
   align-items: center;
+  justify-content: center;
   gap: 8px;
   border-radius: 8px;
   padding: 10px 14px;
@@ -537,6 +539,39 @@
 .action-btn-ghost:hover {
   border-color: rgb(var(--accent-rgb) / 0.55);
   background: rgb(var(--accent-rgb) / 0.1);
+}
+
+.opportunity-link {
+  border-color: var(--line);
+  background: var(--surface);
+  color: var(--accent-bright);
+  white-space: nowrap;
+}
+
+.opportunity-link__icon { width: 18px; height: 18px; flex: 0 0 auto; }
+.opportunity-link__arrow { width: 14px; height: 14px; flex: 0 0 auto; }
+
+.open-source-heading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 20px 24px;
+}
+
+.open-source-heading > .space-y-2 { flex: 1 1 340px; min-width: 0; }
+.open-source-actions { display: flex; flex: 0 1 auto; flex-wrap: wrap; gap: 12px; }
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
 }
 
 .footer-link {

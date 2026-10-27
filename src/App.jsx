@@ -14,6 +14,8 @@ const personalDetails = {
   linkedinLabel: 'linkedin.com/in/arush-khasru',
   x: 'https://x.com/khasruaru',
   xLabel: 'x.com/khasruaru',
+  booking: 'https://cal.com/arush-khasru-dfndja/quick-chat?overlayCalendar=true',
+  sponsors: 'https://github.com/sponsors/ArushKhasru',
 }
 
 const GITHUB_PULL_REQUESTS_CACHE_KEY = 'portfolio-github-open-source-pull-requests'
@@ -761,6 +763,33 @@ Education: MCA, 2024 - 2026 | UGC NET (Computer Science), Dec 2025`,
   )
 }
 
+function OpportunityLink({ kind }) {
+  const booking = kind === 'booking'
+
+  return (
+    <a
+      href={booking ? personalDetails.booking : personalDetails.sponsors}
+      className="action-btn action-btn-ghost opportunity-link"
+      target="_blank"
+      rel="noopener noreferrer"
+    >
+      <svg className="opportunity-link__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+        {booking ? (
+          <>
+            <rect x="3" y="5" width="18" height="16" rx="2" />
+            <path d="M7 3v4M17 3v4M3 10h18m-13 5 2 2 5-5" />
+          </>
+        ) : (
+          <path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8L12 21l8.8-8.6a5.5 5.5 0 0 0 0-7.8Z" />
+        )}
+      </svg>
+      {booking ? 'Book a call' : 'Sponsor'}
+      <span className="visually-hidden"> (opens in a new tab)</span>
+      <svg className="opportunity-link__arrow" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true"><path d="M5 15 15 5M5 5h10v10" /></svg>
+    </a>
+  )
+}
+
 function AboutRoute({ onNavigate, activePath, onReplayIntro }) {
   const stopTerminalMotion = useRef(() => {})
   const terminalReturnScroll = useRef(0)
@@ -877,7 +906,7 @@ function AboutRoute({ onNavigate, activePath, onReplayIntro }) {
         <p className="font-code-md text-body-lg text-on-surface-variant">
           I build full-stack web apps and AI-powered tools. As an AI Trainer at Handshake AI, I evaluate language models for reasoning, accuracy, and instruction following.
         </p>
-        <div className="flex flex-wrap gap-3">
+        <div className="intro-actions flex flex-wrap gap-3">
           <a
             href="/projects"
             onClick={(event) => {
@@ -890,6 +919,7 @@ function AboutRoute({ onNavigate, activePath, onReplayIntro }) {
             View projects
             <span className="material-symbols-outlined text-base" aria-hidden="true">arrow_forward</span>
           </a>
+          <OpportunityLink kind="booking" />
           <a
             href="/Arush_CV.pdf"
             download
@@ -1094,7 +1124,7 @@ function OpenPullRequestsRoute() {
 
   return (
     <section className="open-pr-route space-y-6">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+      <div className="open-source-heading">
         <div className="space-y-2">
           <p className="font-code-md text-xs uppercase text-primary">Live GitHub feed</p>
           <h2 className="flex items-center gap-2 font-headline-md text-headline-md text-on-surface">
@@ -1107,15 +1137,18 @@ function OpenPullRequestsRoute() {
             Pull requests authored by {personalDetails.githubUsername}, grouped by repository.
           </p>
         </div>
-        <a
-          href={createGithubPullRequestSearchUrl()}
-          target="_blank"
-          rel="noreferrer"
-          className="action-btn action-btn-ghost self-start sm:self-auto"
-        >
-          <ContactBrandIcon brand="github" className="h-[16px] w-[16px]" />
-          GitHub Search
-        </a>
+        <div className="open-source-actions">
+          <OpportunityLink kind="sponsors" />
+          <a
+            href={createGithubPullRequestSearchUrl()}
+            target="_blank"
+            rel="noreferrer"
+            className="action-btn action-btn-ghost"
+          >
+            <ContactBrandIcon brand="github" className="h-[16px] w-[16px]" />
+            GitHub Search
+          </a>
+        </div>
       </div>
 
       <div className="open-pr-summary" aria-live="polite">
